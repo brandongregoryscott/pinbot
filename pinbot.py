@@ -18,10 +18,10 @@ def handle_command(command, channel):
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
     """
-    response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
-               "* command with numbers, delimited by spaces."
+    response = "Not sure what you mean. Use the _*" + EXAMPLE_COMMAND + \
+               "*_ command with numbers, delimited by spaces."
     if command.startswith(EXAMPLE_COMMAND):
-        response = "Sure...write some more code then I can do that!"
+        response = "Sure...write some more code then I can do that! Also, Bill is a fuck."
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
