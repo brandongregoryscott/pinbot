@@ -3,6 +3,7 @@ import time
 import json
 from slackclient import SlackClient
 
+# Non-static variables
 BOT_ID = os.environ.get("BOT_ID")
 
 # constants
