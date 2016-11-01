@@ -24,7 +24,8 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
-            if output['type'] == 'message' and output.has_key('subtype') and output['subtype'] == 'pinned_item':
+            if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item':
+                print("Pinned item")
                 slack_client.api_call('chat.postMessage',
                     channel=output['channel'],
                     attachments=output['attachments'],
