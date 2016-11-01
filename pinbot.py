@@ -7,28 +7,15 @@ BOT_ID = os.environ.get("BOT_ID")
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 EXAMPLE_COMMAND = "do"
-COMMANDS = ["vaporwave"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
-def get_wide_text(command, channel):
-    return_string = ""
-    for x in command:
-        if not (command.startsWith(COMMANDS[0]))
-            return_string += x
-    return return_string.replace("", " ")
-
-
-def get_response(command, channel):
-    return {
-        COMMANDS[0]: get_wide_text(command, channel)
-    }.get(command.split(' ', 1)[0], "Write some more code to handle *" +command.split(' ', 1)[0]+ "*  homie!")
-
-
 def handle_command(command, channel):
-    response = get_response(command, channel)
-    
+    response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
+               "* command with numbers, delimited by spaces."
+    if command.startswith(EXAMPLE_COMMAND):
+        response = "Sure...write some more code then I can do that!"
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
