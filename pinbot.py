@@ -24,12 +24,16 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
+            print(output)
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item':
-                print("Pinned item")
-                slack_client.api_call('chat.postMessage',
-                    channel=output['channel'],
-                    attachments=output['attachments'],
-                    as_user=True)
+                attachments = output['attachments']
+                for attachment in attachments:
+                    if attachment['channel_name'] == 'pinbot-test':
+                        slack_client.api_call('chat.postMessage',
+                            channel=output['channel'],
+                            text='TEST BRANCH',
+                            attachments=output['attachments'],
+                            as_user=True)
     return None, None
 
 if __name__ == "__main__":
