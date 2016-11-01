@@ -7,15 +7,31 @@ BOT_ID = os.environ.get("BOT_ID")
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 EXAMPLE_COMMAND = "do"
+COMMAND_RESPONSE = "Write some more code to handle *{0}*  homie!"
+
+# array containing all commands that pinbot can use
+COMMANDS = ["vaporwave"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
+def get_wide_text(command):
+    return_string = ""
+    for x in command:
+        if not (command.startsWith(COMMANDS[0]))
+            return_string += x
+    return return_string.replace("", " ")
+
+
+def get_response(command):
+    command_head = command.split(" ", 1)[0]
+    return {
+        COMMANDS[0]: get_wide_text(command)
+    }.get(command_head, COMMAND_RESPONSE.format(command_head))
+
+
 def handle_command(command, channel):
-    response = "Not sure what you mean. Use the *" + EXAMPLE_COMMAND + \
-               "* command with numbers, delimited by spaces."
-    if command.startswith(EXAMPLE_COMMAND):
-        response = "Sure...write some more code then I can do that!"
+    response = get_response(command, channel)   
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
