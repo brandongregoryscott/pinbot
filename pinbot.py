@@ -9,7 +9,7 @@ AT_BOT = "<@" + BOT_ID + ">"
 COMMAND_RESPONSE = "Write some more code to handle *{0}* homie!"
 
 # array containing all commands that pinbot can use
-COMMANDS = ["vaporwave"]
+COMMANDS = ["vaporwave", ":train:"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -24,7 +24,7 @@ def get_wide_text(command):
     # Before we begin converting to widetext, strip out the first occurrence of
     # the command (and the following space)
     remaining_text = command.replace(COMMANDS[0] + " ", "", 1)
-    wide_text = '';
+    wide_text = ''
 
     # Loop over the remaining text and add the corresponding wide character to
     # the output string
@@ -35,15 +35,47 @@ def get_wide_text(command):
             wide_text += wide[normal.index(char)]
     return wide_text
 
-def get_response(command):
-    command_head = command.split(" ", 1)[0]
-    return {
-        COMMANDS[0]: get_wide_text(command)
-    }.get(command_head, COMMAND_RESPONSE.format(command_head))
+
+def get_emoji_string(count, emoji):
+    i = count
+    formatted_emoji = " "+emoji+" "
+    return_string = ''
+    while i > 0:
+        return_string += formatted_emoji
+        i-=1
+    return return_string
+
+
+def post_train(command, channel):
+    emoji = command.split(" ")[1]
+    emoji_count = 10
+    current_count = 1
+    response = slack_client.api_call("chat.postMessage", channel=channel,
+                                     text=':train:', as_user=True)
+    while emoji_count >= current_count:
+        time.sleep(1)
+        update_text = get_emoji_string(current_count, emoji) + ':train:'
+        update_response = slack_client.api_call("chat.update", channel=channel,
+                              ts=response['ts'], text=update_text, as_user=True)
+        current_count += 1
+
+    return None
+
+
+def get_response(command_head, channel):
+    if command_head == COMMANDS[0]:
+        return get_wide_text(command)
+    elif command_head == COMMANDS[1]:
+        return post_train(command, channel)
+    else:
+        return COMMAND_RESPONSE.format(command_head)
 
 
 def handle_command(command, channel):
-    response = get_response(command)
+    command_head = command.split(" ", 1)[0]
+    response = get_response(command_head, channel)
+    if response is None:
+        return
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
 
@@ -56,13 +88,14 @@ def parse_slack_output(slack_rtm_output):
                 return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item':
                 slack_client.api_call('chat.postMessage',
-                    channel=output['channel'],
-                    attachments=output['attachments'],
-                    as_user=True)
+                                      channel=output['channel'],
+                                      attachments=output['attachments'],
+                                      as_user=True)
     return None, None
 
+
 if __name__ == "__main__":
-    READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
+    READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
         print("pinbot connected and running!")
         while True:
