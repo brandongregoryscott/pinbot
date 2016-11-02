@@ -1,7 +1,5 @@
 import os
 import time
-import json
-import ast
 from slackclient import SlackClient
 
 BOT_ID = os.environ.get("BOT_ID")
@@ -15,7 +13,6 @@ COMMANDS = ["vaporwave", ":train:"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-
 
 def get_wide_text(command):
     # This is a character array containing the normal, unchanged characters
