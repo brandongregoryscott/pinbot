@@ -3,12 +3,9 @@ import time
 import random
 from pathlib import Path
 from slackclient import SlackClient
-if Path("myconfig.py").is_file():
-    import myconfig
 
-
-BOT_ID = os.getenv("BOT_ID", myconfig.BOT_ID)
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", myconfig.SLACK_BOT_TOKEN)
+BOT_ID = os.getenv("BOT_ID")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
