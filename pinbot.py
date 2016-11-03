@@ -1,10 +1,14 @@
 import os
 import time
 import random
+from pathlib import Path
 from slackclient import SlackClient
+if Path("myconfig.py").is_file():
+    import myconfig
 
-BOT_ID = os.environ.get("BOT_ID")
-SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
+
+BOT_ID = os.getenv("BOT_ID", myconfig.BOT_ID)
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", myconfig.SLACK_BOT_TOKEN)
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
@@ -16,6 +20,7 @@ COMMANDS = ["vaporwave", ":train:", "random"]
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(SLACK_BOT_TOKEN)
 
+
 def random_pin(channel):
     # First, we need to grab both the channels (public) and groups (private)
     # from the Slack API
@@ -25,11 +30,11 @@ def random_pin(channel):
     channel_list = channels_json['channels'] + groups_json['groups']
 
     # Now, we will choose a random 'sadbois' channel
-    chosen_channel = None
-    while chosen_channel == None:
+    random_channel = random.choice(channel_list)
+
+    # JGP - simplified while logic
+    while not random_channel['name'].startswith("sadbois"):
         random_channel = random.choice(channel_list)
-        if (random_channel['name'].startswith("sadbois")):
-            chosen_channel = random_channel
 
     # Grab the list of pins for this channel from the Slack API
     pins_json = slack_client.api_call("pins.list", token=SLACK_BOT_TOKEN, channel=random_channel['id'])
@@ -39,7 +44,7 @@ def random_pin(channel):
     random_pin = random.choice(pins_list)
 
     # For right now, we'll only pick from text pins
-    while (random_pin['type'] != 'message'):
+    while random_pin['type'] != 'message':
         random_pin = random.choice(pins_list)
 
     message = random_pin['message']
@@ -56,23 +61,22 @@ def random_pin(channel):
     attachment = []
 
     # This attachment object will contain only one pin object
-    pin_object = {}
-
     # Parse out the pertinent data from the objects obtained earlier
     # This ensures proper formatting for the shared pin
-    pin_object['from_url'] = message['permalink']
-    pin_object['channel_id'] = message['pinned_to']
-    pin_object['text'] = message['text']
-    pin_object['author_icon'] = poster['image_32']
-    pin_object['author_name'] = user['name']
-    pin_object['author_link'] = message['permalink']
-    pin_object['channel_name'] = random_channel['name']
-    pin_object['color'] = "D0D0D0"
-    pin_object['ts'] = message['ts']
-    pin_object['mrkdwn_in'] = ['text']
-    pin_object['footer'] = "Posted in " + random_channel['name']
-    pin_object['is_share'] = True
-    pin_object['is_msg_unfurl'] = True
+    pin_object = {
+        'from_url': message['permalink'],
+        'channel_id': message['pinned_to'],
+        'text': message['text'],
+        'author_icon': poster['image_32'],
+        'author_name': user['name'],
+        'author_link': message['permalink'],
+        'channel_name': random_channel['name'],
+        'color': "D0D0D0", 'ts': message['ts'],
+        'mrkdwn_in': ['text'],
+        'footer': "Posted in " + random_channel['name'],
+        'is_share': True,
+        'is_msg_unfurl': True
+    }
 
     # Finally, append this pin object to the attachment array and post it
     attachment.append(pin_object)
@@ -81,6 +85,7 @@ def random_pin(channel):
                           attachments=attachment,
                           as_user=True)
     return None
+
 
 def get_wide_text(command):
     # This is a character array containing the normal, unchanged characters
@@ -104,28 +109,22 @@ def get_wide_text(command):
     return wide_text
 
 
-def get_emoji_string(count, emoji):
-    i = count
-    formatted_emoji = " "+emoji+" "
-    return_string = ''
-    while i > 0:
-        return_string += formatted_emoji
-        i-=1
-    return return_string
-
-
 def post_train(command, channel):
+    # First, we need to get the emoji out of the command that we are to reiterate
     emoji = command.split(" ")[1]
-    emoji_count = random.randrange(5, 10, 1)
-    current_count = 1
     response = slack_client.api_call("chat.postMessage", channel=channel,
                                      text=':train:', as_user=True)
-    while emoji_count >= current_count:
+
+    post_text = " :train:"
+    # Next, we post the initial :train: message that we will be appending our emojis onto
+    response = slack_client.api_call("chat.postMessage", channel=channel, text=':train:', as_user=True)
+
+    # next, we generate a random number between 5 and 10, and append the emoji
+    # that many times to the head of the string
+    for i in range(random.randint(5, 10)):
         time.sleep(1)
-        update_text = get_emoji_string(current_count, emoji) + ':train:'
-        update_response = slack_client.api_call("chat.update", channel=channel,
-                              ts=response['ts'], text=update_text, as_user=True)
-        current_count += 1
+        post_text = " " + emoji + post_text
+        slack_client.api_call("chat.update", channel=channel, ts=response['ts'], text=post_text, as_user=True)
 
     return None
 
