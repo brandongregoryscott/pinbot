@@ -1,21 +1,86 @@
 import os
 import time
-import json
-import ast
+import random
 from slackclient import SlackClient
 
 BOT_ID = os.environ.get("BOT_ID")
+SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 COMMAND_RESPONSE = "Write some more code to handle *{0}* homie!"
 
 # array containing all commands that pinbot can use
-COMMANDS = ["vaporwave", ":train:"]
+COMMANDS = ["vaporwave", ":train:", "random"]
 
 # instantiate Slack & Twilio clients
-slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+slack_client = SlackClient(SLACK_BOT_TOKEN)
 
+def random_pin(channel):
+    # First, we need to grab both the channels (public) and groups (private)
+    # from the Slack API
+    channels_json = slack_client.api_call("channels.list", token=SLACK_BOT_TOKEN)
+    groups_json = slack_client.api_call("groups.list", token=SLACK_BOT_TOKEN)
+    # Extract the individual channels & group JSON Arrays from the responses
+    channel_list = channels_json['channels'] + groups_json['groups']
+
+    # Now, we will choose a random 'sadbois' channel
+    chosen_channel = None
+    while chosen_channel == None:
+        random_channel = random.choice(channel_list)
+        if (random_channel['name'].startswith("sadbois")):
+            chosen_channel = random_channel
+
+    # Grab the list of pins for this channel from the Slack API
+    pins_json = slack_client.api_call("pins.list", token=SLACK_BOT_TOKEN, channel=random_channel['id'])
+    pins_list = pins_json['items']
+
+    # Select a random pin from the list
+    random_pin = random.choice(pins_list)
+
+    # For right now, we'll only pick from text pins
+    while (random_pin['type'] != 'message'):
+        random_pin = random.choice(pins_list)
+
+    message = random_pin['message']
+
+    # Grab information about the posting user from the Slack API
+    user_json = slack_client.api_call("users.info", token=SLACK_BOT_TOKEN, user=message['user'])
+    user = user_json['user']
+
+    # The user's 'profile' JSON object contains more specific info about them
+    # https://api.slack.com/methods/users.info
+    poster = user['profile']
+
+    # Create an array to hold the attachment object
+    attachment = []
+
+    # This attachment object will contain only one pin object
+    pin_object = {}
+
+    # Parse out the pertinent data from the objects obtained earlier
+    # This ensures proper formatting for the shared pin
+    pin_object['from_url'] = message['permalink']
+    pin_object['channel_id'] = message['pinned_to']
+    pin_object['text'] = message['text']
+    pin_object['author_icon'] = poster['image_32']
+    pin_object['author_name'] = user['name']
+    pin_object['author_link'] = message['permalink']
+    pin_object['channel_name'] = random_channel['name']
+    pin_object['color'] = "D0D0D0"
+    pin_object['ts'] = message['ts']
+    pin_object['mrkdwn_in'] = ['text']
+    pin_object['footer'] = "Posted in " + random_channel['name']
+    pin_object['is_share'] = True
+    pin_object['is_msg_unfurl'] = True
+
+    # Finally, append this pin object to the attachment array and post it
+    attachment.append(pin_object)
+    slack_client.api_call('chat.postMessage',
+                          channel=channel,
+                          attachments=attachment,
+                          as_user=True)
+    return None
 
 def get_wide_text(command):
     # This is a character array containing the normal, unchanged characters
@@ -70,6 +135,8 @@ def get_response(command_head, channel):
         return get_wide_text(command)
     elif command_head == COMMANDS[1]:
         return post_train(command, channel)
+    elif command_head == COMMANDS[2]:
+        return random_pin(channel)
     else:
         return COMMAND_RESPONSE.format(command_head)
 
@@ -87,6 +154,7 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
+            print(output)
             if output['type'] == 'message' and 'text' in output and AT_BOT in output['text']:
                 return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item':
