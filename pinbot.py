@@ -2,6 +2,7 @@ import os
 import time
 import json
 import ast
+import random
 from slackclient import SlackClient
 
 BOT_ID = os.environ.get("BOT_ID")
@@ -51,7 +52,7 @@ def get_emoji_string(count, emoji):
 
 def post_train(command, channel):
     emoji = command.split(" ")[1]
-    emoji_count = 10
+    emoji_count = random.randrange(1, 10, 1)
     current_count = 1
     response = slack_client.api_call("chat.postMessage", channel=channel,
                                      text=':train:', as_user=True)
