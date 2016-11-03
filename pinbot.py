@@ -15,6 +15,7 @@ COMMANDS = ["vaporwave", ":train:", "random"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(SLACK_BOT_TOKEN)
+
 def random_pin(channel):
     # First, we need to grab both the channels (public) and groups (private)
     # from the Slack API
@@ -29,6 +30,7 @@ def random_pin(channel):
         random_channel = random.choice(channel_list)
         if (random_channel['name'].startswith("sadbois")):
             chosen_channel = random_channel
+
     # Grab the list of pins for this channel from the Slack API
     pins_json = slack_client.api_call("pins.list", token=SLACK_BOT_TOKEN, channel=random_channel['id'])
     pins_list = pins_json['items']
@@ -156,13 +158,10 @@ def parse_slack_output(slack_rtm_output):
             if output['type'] == 'message' and 'text' in output and AT_BOT in output['text']:
                 return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item':
-                attachments = output['attachments']
-                for attachment in attachments:
-                    if attachment['channel_name'] == 'pinbot-test':
-                        slack_client.api_call('chat.postMessage',
-                                              channel=output['channel'],
-                                              attachments=output['attachments'],
-                                              as_user=True)
+                slack_client.api_call('chat.postMessage',
+                                      channel=output['channel'],
+                                      attachments=output['attachments'],
+                                      as_user=True)
     return None, None
 
 
