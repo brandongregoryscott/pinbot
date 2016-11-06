@@ -109,8 +109,6 @@ def get_wide_text(command):
 def post_train(command, channel):
     # First, we need to get the emoji out of the command that we are to reiterate
     emoji = command.split(" ")[1]
-    response = slack_client.api_call("chat.postMessage", channel=channel,
-                                     text=':train:', as_user=True)
 
     post_text = " :train:"
     # Next, we post the initial :train: message that we will be appending our emojis onto
