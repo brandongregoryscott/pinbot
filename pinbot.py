@@ -1,14 +1,12 @@
 import os
 import time
 import random
-from pathlib import Path
+import _thread
 from slackclient import SlackClient
-if Path("myconfig.py").is_file():
-    import myconfig
 
 
-BOT_ID = os.getenv("BOT_ID", myconfig.BOT_ID)
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", myconfig.SLACK_BOT_TOKEN)
+BOT_ID = os.getenv("BOT_ID")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
@@ -169,7 +167,7 @@ if __name__ == "__main__":
         while True:
             command, channel = parse_slack_output(slack_client.rtm_read())
             if command and channel:
-                handle_command(command, channel)
+                _thread.start_new_thread(handle_command, (command, channel))
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
