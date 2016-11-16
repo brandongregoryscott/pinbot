@@ -21,7 +21,9 @@ slack_client = SlackClient(SLACK_BOT_TOKEN)
 
 
 def lul_wall():
-    lul_wall_text = ":lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul:"
+    lul_wall_text = ""
+    for i in range(297):
+        lul_wall_text += ":lul: "
     slack_client.api_call("chat.postMessage", channel=channel, text=lul_wall_text, as_user=True)
     return None
 
