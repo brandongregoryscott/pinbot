@@ -5,9 +5,11 @@ import _thread
 from pathlib import Path
 from slackclient import SlackClient
 
-BOT_ID = os.getenv("BOT_ID")
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
+#BOT_ID = os.getenv("BOT_ID")
+#SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
+SLACK_BOT_TOKEN='xoxb-98396445685-gexbnAI5UoqHXh9vSAQkjsIW'
+BOT_ID='U2WBND3L5'
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
@@ -21,7 +23,9 @@ slack_client = SlackClient(SLACK_BOT_TOKEN)
 
 
 def lul_wall():
-    lul_wall_text = ":lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul: :lul:"
+    lul_wall_text = ""
+    for i in range(297):
+        lul_wall_text += ":lul: "
     slack_client.api_call("chat.postMessage", channel=channel, text=lul_wall_text, as_user=True)
     return None
 
