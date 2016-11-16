@@ -8,15 +8,24 @@ from slackclient import SlackClient
 BOT_ID = os.getenv("BOT_ID")
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
+
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 COMMAND_RESPONSE = "Write some more code to handle *{0}* homie!"
 
 # array containing all commands that pinbot can use
-COMMANDS = ["vaporwave", ":train:", "random"]
+COMMANDS = ["vaporwave", ":train:", "random", "wall", "build", "lul"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(SLACK_BOT_TOKEN)
+
+
+def lul_wall():
+    lul_wall_text = ""
+    for i in range(297):
+        lul_wall_text += ":lul: "
+    slack_client.api_call("chat.postMessage", channel=channel, text=lul_wall_text, as_user=True)
+    return None
 
 
 def random_pin(channel):
@@ -132,6 +141,8 @@ def get_response(command_head, channel):
         return post_train(command, channel)
     elif command_head == COMMANDS[2]:
         return random_pin(channel)
+    elif command_head == COMMANDS[3] or command_head == COMMANDS[4] or command_head == COMMANDS[5]:
+        return lul_wall()
     else:
         return COMMAND_RESPONSE.format(command_head)
 
