@@ -5,11 +5,9 @@ import _thread
 from pathlib import Path
 from slackclient import SlackClient
 
-#BOT_ID = os.getenv("BOT_ID")
-#SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
+BOT_ID = os.getenv("BOT_ID")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
-SLACK_BOT_TOKEN='xoxb-98396445685-gexbnAI5UoqHXh9vSAQkjsIW'
-BOT_ID='U2WBND3L5'
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
