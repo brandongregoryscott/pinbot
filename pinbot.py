@@ -5,10 +5,8 @@ import _thread
 import myconfig
 from slackclient import SlackClient
 
-#BOT_ID = os.getenv("BOT_ID")
-#SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
-BOT_ID = myconfig.BOT_ID
-SLACK_BOT_TOKEN = myconfig.SLACK_BOT_TOKEN
+BOT_ID = os.getenv("BOT_ID")
+SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
