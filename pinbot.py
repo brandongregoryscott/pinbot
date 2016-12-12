@@ -24,7 +24,7 @@ slack_client = SlackClient(SLACK_BOT_TOKEN)
 def build_clap(text):
     while text.endswith(" "):
         text = text[:-1]
-    return command.replace(COMMANDS[6] + " ", "", 1).replace(" ", " :clap: ")
+    return command.replace(COMMANDS[6] + " ", "", 1).replace(" ", " :clap: ").upper()
 
 
 def lul_wall():
