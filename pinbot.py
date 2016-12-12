@@ -2,7 +2,6 @@ import os
 import time
 import random
 import _thread
-import myconfig
 from slackclient import SlackClient
 
 BOT_ID = os.getenv("BOT_ID")
