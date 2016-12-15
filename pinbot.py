@@ -2,10 +2,11 @@ import os
 import time
 import random
 import _thread
+import botconfig
 from slackclient import SlackClient
 
-BOT_ID = os.getenv("BOT_ID")
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
+BOT_ID = botconfig.BOT_ID
+SLACK_BOT_TOKEN = botconfig.SLACK_BOT_TOKEN
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
