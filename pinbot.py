@@ -3,6 +3,7 @@ import time
 import random
 import _thread
 import botconfig
+import sys, getopt
 from slackclient import SlackClient
 
 BOT_ID = botconfig.BOT_ID
@@ -18,6 +19,8 @@ COMMANDS = ["vaporwave", ":train:", "random", "wall", "build", "lul", "clap"]
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(SLACK_BOT_TOKEN)
 
+# Boolean for printing debugging output
+DEBUG = False
 
 def build_clap(text):
     while text.endswith(" "):
@@ -167,7 +170,9 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
-            print(str(output).encode('utf-8'))
+            print(DEBUG)
+            if DEBUG == True:
+                print(str(output).encode('utf-8'))
             if output['type'] == 'message' and 'text' in output and AT_BOT in output['text']:
                 return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item' and 'attachments' in output:
@@ -177,8 +182,27 @@ def parse_slack_output(slack_rtm_output):
                                       as_user=True)
     return None, None
 
+def printHelp():
+    print("python3 pinbot.py Starts pinbot normally without any extra configuration.")
+    print("python3 pinbot.py [-h | --help] Prints help info from slack client.")
+    print("python3 pinbot.py [-d | --debug] Prints all output from slack client.")
 
-if __name__ == "__main__":
+def main(argv):
+    print("-----------------------")
+    try:
+        opts, args = getopt.getopt(argv,"hd",["help","debug"])
+    except getopt.GetoptError:
+        printHelp()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            printHelp()
+            sys.exit(2)
+        elif opt in ("-d", "--debug"):
+            global DEBUG
+            DEBUG = True
+    print("DEBUG: " + str(DEBUG))
+
     READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
         print("pinbot connected and running!")
@@ -189,3 +213,5 @@ if __name__ == "__main__":
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
+if __name__ == "__main__":
+    main(sys.argv[1:])
