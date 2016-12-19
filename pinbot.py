@@ -4,6 +4,7 @@ import random
 import _thread
 import botconfig
 import sys, getopt
+import datetime
 from slackclient import SlackClient
 
 BOT_ID = botconfig.BOT_ID
@@ -170,7 +171,6 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
-            print(DEBUG)
             if DEBUG == True:
                 print(str(output).encode('utf-8'))
             if output['type'] == 'message' and 'text' in output and AT_BOT in output['text']:
@@ -201,11 +201,13 @@ def main(argv):
         elif opt in ("-d", "--debug"):
             global DEBUG
             DEBUG = True
-    print("DEBUG: " + str(DEBUG))
+
 
     READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
-        print("pinbot connected and running!")
+        now = datetime.datetime.now()
+        print("%s/%s/%s %s:%s:%s pinbot connected and running!" % (now.month, now.day, now.year, now.hour, now.month, now.second))
+        print("DEBUG: " + str(DEBUG))
         while True:
             command, channel = parse_slack_output(slack_client.rtm_read())
             if command and channel:
