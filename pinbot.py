@@ -2,22 +2,31 @@ import os
 import time
 import random
 import _thread
-from pathlib import Path
+import botconfig
+import sys, getopt
+import datetime
 from slackclient import SlackClient
 
-BOT_ID = os.getenv("BOT_ID")
-SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN")
-
+BOT_ID = botconfig.BOT_ID
+SLACK_BOT_TOKEN = botconfig.SLACK_BOT_TOKEN
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 COMMAND_RESPONSE = "Write some more code to handle *{0}* homie!"
 
 # array containing all commands that pinbot can use
-COMMANDS = ["vaporwave", ":train:", "random", "wall", "build", "lul"]
+COMMANDS = ["vaporwave", ":train:", "random", "wall", "build", "lul", "clap"]
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(SLACK_BOT_TOKEN)
+
+# Boolean for printing debugging output
+DEBUG = False
+
+def build_clap(text):
+    while text.endswith(" "):
+        text = text[:-1]
+    return command.replace(COMMANDS[6] + " ", "", 1).replace(" ", " :clap: ").upper()
 
 
 def lul_wall():
@@ -143,6 +152,8 @@ def get_response(command_head, channel):
         return random_pin(channel)
     elif command_head == COMMANDS[3] or command_head == COMMANDS[4] or command_head == COMMANDS[5]:
         return lul_wall()
+    elif command_head == COMMANDS[6]:
+        return build_clap(command)
     else:
         return COMMAND_RESPONSE.format(command_head)
 
@@ -160,7 +171,8 @@ def parse_slack_output(slack_rtm_output):
     output_list = slack_rtm_output
     if output_list and len(output_list) > 0:
         for output in output_list:
-            print(str(output).encode('utf-8'))
+            if DEBUG == True:
+                print(str(output).encode('utf-8'))
             if output['type'] == 'message' and 'text' in output and AT_BOT in output['text']:
                 return output['text'].split(AT_BOT)[1].strip().lower(), output['channel']
             if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item' and 'attachments' in output:
@@ -170,11 +182,32 @@ def parse_slack_output(slack_rtm_output):
                                       as_user=True)
     return None, None
 
+def printHelp():
+    print("python3 pinbot.py Starts pinbot normally without any extra configuration.")
+    print("python3 pinbot.py [-h | --help] Prints help info from slack client.")
+    print("python3 pinbot.py [-d | --debug] Prints all output from slack client.")
 
-if __name__ == "__main__":
+def main(argv):
+    print("-----------------------")
+    try:
+        opts, args = getopt.getopt(argv,"hd",["help","debug"])
+    except getopt.GetoptError:
+        printHelp()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            printHelp()
+            sys.exit(2)
+        elif opt in ("-d", "--debug"):
+            global DEBUG
+            DEBUG = True
+
+
     READ_WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
-        print("pinbot connected and running!")
+        now = datetime.datetime.now()
+        print("%s/%s/%s %s:%s:%s pinbot connected and running!" % (now.month, now.day, now.year, now.hour, now.month, now.second))
+        print("DEBUG: " + str(DEBUG))
         while True:
             command, channel = parse_slack_output(slack_client.rtm_read())
             if command and channel:
@@ -182,3 +215,5 @@ if __name__ == "__main__":
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
+if __name__ == "__main__":
+    main(sys.argv[1:])
