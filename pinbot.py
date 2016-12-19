@@ -23,13 +23,14 @@ slack_client = SlackClient(SLACK_BOT_TOKEN)
 # Boolean for printing debugging output
 DEBUG = False
 
-def build_clap(text):
-    while text.endswith(" "):
-        text = text[:-1]
+
+def build_clap(command):
+    while command.endswith(" "):
+        command = command[:-1]
     return command.replace(COMMANDS[6] + " ", "", 1).replace(" ", " :clap: ").upper()
 
 
-def lul_wall():
+def lul_wall(channel):
     lul_wall_text = ""
     for i in range(297):
         lul_wall_text += ":lul: "
@@ -143,7 +144,8 @@ def post_train(command, channel):
     return None
 
 
-def get_response(command_head, channel):
+def get_response(command, channel):
+    command_head = command.split(" ", 1)[0]
     if command_head == COMMANDS[0]:
         return get_wide_text(command)
     elif command_head == COMMANDS[1]:
@@ -151,7 +153,7 @@ def get_response(command_head, channel):
     elif command_head == COMMANDS[2]:
         return random_pin(channel)
     elif command_head == COMMANDS[3] or command_head == COMMANDS[4] or command_head == COMMANDS[5]:
-        return lul_wall()
+        return lul_wall(channel)
     elif command_head == COMMANDS[6]:
         return build_clap(command)
     else:
@@ -159,8 +161,7 @@ def get_response(command_head, channel):
 
 
 def handle_command(command, channel):
-    command_head = command.split(" ", 1)[0]
-    response = get_response(command_head, channel)
+    response = get_response(command, channel)
     if response is None:
         return
     slack_client.api_call("chat.postMessage", channel=channel,
