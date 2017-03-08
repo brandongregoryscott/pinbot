@@ -23,7 +23,7 @@ class Random(Command):
         random_channel = random.choice(channel_list)
 
         # JGP - simplified while logic
-        while not random_channel['name'].startswith("sadbois"):
+        while not random_channel['name'][0].isdigit():
             random_channel = random.choice(channel_list)
 
         # Grab the list of pins for this channel from the Slack API
