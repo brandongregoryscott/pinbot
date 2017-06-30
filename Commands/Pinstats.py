@@ -79,53 +79,54 @@ class Pinstats(Command):
         print("pins in channel: {0}".format(len(pins_list)))
         print("pin_counts: {0}".format(pin_counts))
         print("pinner_counts: {0}".format(pinner_counts))
-        attachment = list()
+        attachments = list()
         i = 0
-        header = {
-            'text': "Users with top # of messages for the channel:\n"
+        message = {
+            'text': "Top pinned:\n"
         }
-        attachment.append(header)
+        attachments.append(message)
         for user_id in sorted(pin_counts, key=pin_counts.get, reverse=True):
             i += 1
             user_json = slack_client.api_call("users.info", token=token, user=user_id)
             user = user_json['user']
-            poster = user['profile']
-            print("{0} {1}".format(user['name'], pin_counts[user_id]))
-
-            entry = {
-                'author_icon': poster['image_32'],
-                'author_name': "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pin_counts[user_id], " messages")
-            }
+            # poster = user['profile']
+            # print("{0} {1}".format(user['name'], pin_counts[user_id]))
+            message['text'] += "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pin_counts[user_id], " messages\n")
+            # entry = {
+            #     'author_icon': poster['image_32'],
+            #     'author_name': "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pin_counts[user_id], " messages")
+            # }
 
             # Finally, append this pin object to the attachment array
-            attachment.append(entry)
-        slack_client.api_call('chat.postMessage',
-                              channel=self.CHANNEL,
-                              attachments=attachment,
-                              as_user=True)
-        attachment.clear()
+        #     attachments.append(entry)
+        # slack_client.api_call('chat.postMessage',
+        #                       channel=self.CHANNEL,
+        #                       attachments=attachment,
+        #                       as_user=True)
+        # attachments.clear()
         i = 0
-        header = {
-            'text': "Users with top # of pins for the channel:\n"
-        }
-        attachment.append(header)
+        # header = {
+        #     'text': "Users with top # of pins for the channel:\n"
+        # }
+        message['text'] += "\nTop pinners:\n"
+        # attachments.append(header)
         for user_id in sorted(pinner_counts, key=pinner_counts.get, reverse=True):
             i += 1
             user_json = slack_client.api_call("users.info", token=token, user=user_id)
             user = user_json['user']
-            poster = user['profile']
-            print("{0} {1}".format(user['name'], pinner_counts[user_id]))
-
-            entry = {
-                'author_icon': poster['image_32'],
-                'author_name': "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pinner_counts[user_id],
-                                                           " pins")
-            }
+            # poster = user['profile']
+            # print("{0} {1}".format(user['name'], pinner_counts[user_id]))
+            message['text'] += "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pinner_counts[user_id], " pins\n")
+            # entry = {
+            #     'author_icon': poster['image_32'],
+            #     'author_name': "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pinner_counts[user_id],
+            #                                                " pins")
+            # }
 
             # Finally, append this pin object to the attachment array
-            attachment.append(entry)
+            # attachments.append(entry)
         slack_client.api_call('chat.postMessage',
                               channel=self.CHANNEL,
-                              attachments=attachment,
+                              attachments=attachments,
                               as_user=True)
 
