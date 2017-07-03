@@ -59,17 +59,19 @@ class Pinstats(Command):
 
         if self.command is None:
             self.pinstats()
-            print("no command - pulling back stats for a specific channel")
 
     def pinstats(self):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
 
-        pin_counts, pinner_counts = self.count_pins()
+        # Grab the list of pins for this channel from the Slack API
+        pins_json = slack_client.api_call("pins.list", token=token, channel=self.channel)
+        pins_list = pins_json['items']
+
+        pin_counts, pinner_counts = self.count_pins(pins_list)
         pinned_field, pinners_field = self.format_pin_fields(pin_counts, pinner_counts)
-        # print("pins in channel: {0}".format(len(pins_list)))
-        # print("pin_counts: {0}".format(pin_counts))
-        # print("pinner_counts: {0}".format(pinner_counts))
+        stats_field = self.format_stats_field(pins_list)
+
         attachments = list()
         message = {
             'fields': list()
@@ -77,6 +79,7 @@ class Pinstats(Command):
 
         message['fields'].append(pinned_field)
         message['fields'].append(pinners_field)
+        message['fields'].append(stats_field)
 
         attachments.append(message)
         slack_client.api_call('chat.postMessage',
@@ -84,13 +87,9 @@ class Pinstats(Command):
                               attachments=attachments,
                               as_user=True)
 
-    def count_pins(self):
+    def count_pins(self, pins_list):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
-
-        # Grab the list of pins for this channel from the Slack API
-        pins_json = slack_client.api_call("pins.list", token=token, channel=self.channel)
-        pins_list = pins_json['items']
 
         pin_counts = dict()
         pinner_counts = dict()
@@ -137,3 +136,29 @@ class Pinstats(Command):
                                                                   " pins\n")
 
         return pinned_field, pinners_field
+
+    def format_stats_field(self, pins_list):
+        slack_client = self.CLIENT
+        token = botconfig.SLACK_BOT_TOKEN
+
+        sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
+        channel_info = slack_client.api_call('channels.info', channel=sorted_list[0]['channel'])
+        stats_field = {
+            'title': "Pinstats for #{0}:".format(channel_info['channel']['name']),
+            'value': "",
+            'short': False
+        }
+        start_time = datetime.datetime.fromtimestamp(sorted_list[0]['created'])
+        end_time = datetime.datetime.fromtimestamp(sorted_list[len(sorted_list) - 1]['created'])
+        time_diff = end_time - start_time
+        print("time diff: {0}".format(time_diff))
+        hours = time_diff.days * 8
+        if hours == 0:
+            hours = time_diff.seconds / 60 / 60
+        pph = len(sorted_list) / hours
+        stats_field['value'] += "Pinstart: {0}\n".format(start_time.strftime("%m/%d/%y %I:%M:%S %p"))
+        if len(sorted_list) == 100:
+            stats_field['value'] += "Pinend: {0}\n".format(end_time.strftime("%m/%d/%y %I:%M:%S %p"))
+            stats_field['value'] += "Time to completion: {0}\n".format(time_diff)
+        stats_field['value'] += "PPH: {0:.2f}\n".format(pph)
+        return stats_field
