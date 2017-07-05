@@ -47,7 +47,8 @@ class Pinstats(Command):
                 date = datetime.datetime.today() - timedelta(days=1)
                 date = date.strftime("%m/%d/%y")
 
-        self.channel = channel.upper()
+        if channel is not None:
+            self.channel = channel.upper()
         self.date = date
         self.command = command
 
@@ -59,6 +60,47 @@ class Pinstats(Command):
 
         if self.command is None:
             self.pinstats()
+        elif self.command == "channels":
+            self.chanstats()
+
+    def chanstats(self):
+        slack_client = self.CLIENT
+        token = botconfig.SLACK_BOT_TOKEN
+
+        # First, we need to grab both the channels (public) and groups (private)
+        # from the Slack API
+        channels_json = slack_client.api_call("channels.list", token=token)
+        groups_json = slack_client.api_call("groups.list", token=token)
+        # Extract the individual channels & group JSON Arrays from the responses
+        channel_list = channels_json['channels'] + groups_json['groups']
+
+        channel_dict = dict()
+        for channel in channel_list:
+            if channel['name'][0].isdigit():
+                # Grab the list of pins for this channel from the Slack API
+                pins_json = slack_client.api_call("pins.list", token=token, channel=channel['id'])
+                pins_list = pins_json['items']
+                # print("channel ID: {0} pins: {1}".format(channel, pins_list))
+                if len(pins_list) >= 95:
+                    sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
+
+                    start_time = datetime.datetime.fromtimestamp(sorted_list[0]['created'])
+                    end_time = datetime.datetime.fromtimestamp(sorted_list[len(sorted_list) - 1]['created'])
+                    time_diff = end_time - start_time
+
+                    channel_dict[channel['id']] = time_diff
+        i = 0
+        for channel_id in sorted(channel_dict, key=channel_dict.get, reverse=False):
+            i += 1
+            channel_type = 'channel'
+            if channel_id.startswith('C'):
+                channel_info = slack_client.api_call(channel_type + 's.info', channel=channel_id)
+            else:
+                channel_type = 'group'
+                channel_info = slack_client.api_call(channel_type + 's.info', channel=channel_id)
+            print("{0}. #{1} {2}".format(i, channel_info[channel_type]['name'], channel_dict[channel_id]))
+        # print(channel_dict)
+
 
     def pinstats(self):
         slack_client = self.CLIENT
@@ -157,7 +199,7 @@ class Pinstats(Command):
             hours = time_diff.seconds / 60 / 60
         pph = len(sorted_list) / hours
         stats_field['value'] += "Pinstart: {0}\n".format(start_time.strftime("%m/%d/%y %I:%M:%S %p"))
-        if len(sorted_list) == 100:
+        if len(sorted_list) >= 95:
             stats_field['value'] += "Pinend: {0}\n".format(end_time.strftime("%m/%d/%y %I:%M:%S %p"))
             stats_field['value'] += "Time to completion: {0}\n".format(time_diff)
         stats_field['value'] += "PPH: {0:.2f}\n".format(pph)
