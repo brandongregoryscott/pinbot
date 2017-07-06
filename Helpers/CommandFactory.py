@@ -7,6 +7,7 @@ from Commands.LulWall import LulWall
 from Commands.WalledGarden import WalledGarden
 from Commands.Pinstats import Pinstats
 from Commands.Chanstats import Chanstats
+from Commands.Story import Story
 
 # arrays containing all commands that pinbot can use
 
@@ -18,6 +19,7 @@ CLAP_COMMANDS = ["clap", ":clap:"]
 WG_COMMANDS = ["wg", "walledgarden", "2016"]
 PINSTATS_COMMANDS = ["ps", "pinstats"]
 CHANSTATS_COMMANDS = ["cs", "chanstats"]
+STORY_COMMANDS = ["story", "pinstory"]
 
 def build_command(client, command, channel):
     command_head = command.split(" ", 1)[0]
@@ -38,6 +40,8 @@ def build_command(client, command, channel):
         return Pinstats(client, command_head, command_text, channel)
     elif command_head in CHANSTATS_COMMANDS:
         return Chanstats(client, command_head, command_text, channel)
+    elif command_head in STORY_COMMANDS:
+        return Story(client, command_head, command_text, channel)
     else:
         return Default(client, command_head, command_text, channel)
 
