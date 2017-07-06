@@ -18,11 +18,8 @@ def calc_pph(sorted_pin_list):
         days = (days / 7) * 5
 
     # Take 8 hours of each day for more accuracy
-    hours = days * 8
+    hours = (days * 8) + (time_diff.seconds / 60 / 60)
 
-    # If the channel is < 1 day old, just take the seconds & calculate the # of hours
-    if hours == 0:
-        hours = time_diff.seconds / 60 / 60
     pph = len(sorted_pin_list) / hours
 
     # If the channel is not complete, set end_time null
