@@ -67,7 +67,7 @@ class Pinstats(Command):
 
         pin_count_today, pin_counts, pinner_counts = self.count_pins(pins_list)
         pinned_field, pinners_field = self.format_pin_fields(pin_counts, pinner_counts)
-        start_time, end_time, pph = self.calc_pph(sorted(pins_list, key=lambda pin: pin['created']))
+        start_time, end_time, pph = calc_pph(pins_list)
         stats_field = self.format_stats_field(channel_info, start_time, end_time, pph, pin_count_today)
 
         attachments = list()
@@ -86,9 +86,6 @@ class Pinstats(Command):
                               as_user=True)
 
     def count_pins(self, pins_list):
-        slack_client = self.CLIENT
-        token = botconfig.SLACK_BOT_TOKEN
-
         pin_count_today = 0
         pin_counts = dict()
         pinner_counts = dict()
@@ -139,11 +136,6 @@ class Pinstats(Command):
         return pinned_field, pinners_field
 
     def format_stats_field(self, channel_info, start_time, end_time, pph, pin_count_today):
-        slack_client = self.CLIENT
-        token = botconfig.SLACK_BOT_TOKEN
-
-        # sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
-        # channel_info = slack_client.api_call('channels.info', channel=sorted_list[0]['channel'])
         stats_field = {
             'title': "Pinstats for #{0}:".format(channel_info['channel']['name']),
             'value': "",
@@ -157,27 +149,3 @@ class Pinstats(Command):
         stats_field['value'] += "PPH: {0:.2f}\n".format(pph)
         stats_field['value'] += "Pins today: {0}\n".format(pin_count_today)
         return stats_field
-
-    def calc_pph(self, sorted_pin_list):
-        start_time = datetime.datetime.fromtimestamp(sorted_pin_list[0]['created'])
-        end_time = datetime.datetime.fromtimestamp(sorted_pin_list[len(sorted_pin_list) - 1]['created'])
-        time_diff = end_time - start_time
-
-        days = time_diff.days
-        # If number of days is > 5, the channel has probably lasted over a week.
-        # Take 5 days of each 7 for the calculation for more accuracy
-        if days > 5:
-            days = (days / 7) * 5
-
-        # Take 8 hours of each day for more accuracy
-        hours = days * 8
-
-        # If the channel is < 1 day old, just take the seconds & calculate the # of hours
-        if hours == 0:
-            hours = time_diff.seconds / 60 / 60
-        pph = len(sorted_pin_list) / hours
-
-        # If the channel is not complete, set end_time null
-        if len(sorted_pin_list) < 95:
-            end_time = None
-        return start_time, end_time, pph
