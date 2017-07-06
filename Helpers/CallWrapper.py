@@ -1,4 +1,5 @@
 from slackclient import SlackClient
+import re
 
 
 class CallWrapper(object):
@@ -46,3 +47,13 @@ class CallWrapper(object):
             channel_info['channel'] = channel_info.pop('group')
 
         return channel_info
+
+    def get_channel_info_by_name(self, channel_name):
+        token = self.SLACK_BOT_TOKEN
+        slack_client = self.SLACK_CLIENT
+
+        channel_list = self.get_channel_list()
+        for channel_info in channel_list:
+            if channel_name == channel_info['name']:
+                return channel_info
+        raise ValueError("Channel name not found")

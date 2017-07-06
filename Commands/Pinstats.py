@@ -3,116 +3,72 @@ import re
 import datetime
 from datetime import timedelta
 from Models.Command import Command
+from Helpers.CallWrapper import CallWrapper
 
 
-def count_pins(channel):
-    pass
+def calc_pph(sorted_pin_list):
+    end_time = datetime.datetime.fromtimestamp(sorted_pin_list[0]['created'])
+    start_time = datetime.datetime.fromtimestamp(sorted_pin_list[len(sorted_pin_list) - 1]['created'])
+    time_diff = end_time - start_time
 
+    days = time_diff.days
+    # If number of days is > 5, the channel has probably lasted over a week.
+    # Take 5 days of each 7 for the calculation for more accuracy
+    if days > 5:
+        days = (days / 7) * 5
+
+    # Take 8 hours of each day for more accuracy
+    hours = days * 8
+
+    # If the channel is < 1 day old, just take the seconds & calculate the # of hours
+    if hours == 0:
+        hours = time_diff.seconds / 60 / 60
+    pph = len(sorted_pin_list) / hours
+
+    # If the channel is not complete, set end_time null
+    if len(sorted_pin_list) < 95:
+        end_time = None
+    return start_time, end_time, pph
 
 class Pinstats(Command):
     def __init__(self, client, command_head, command_text, channel):
         Command.__init__(self, client, command_head, command_text, channel)
-        self.channel = None
-        self.date = None
-        self.command = None
+        self.STAT_CHANNEL = None
 
     def parse_arguments(self):
-        date = None
-        channel = None
-        command = None
+        token = botconfig.SLACK_BOT_TOKEN
         command_text = self.COMMAND_TEXT
-        date_pattern = re.compile("(today)|(yesterday)|([0-9]{1,2}/[0-9]{1,2}(/[0-9]{2})?)")
+        stat_channel = None
         channel_pattern = re.compile("<#[a-zA-Z0-9]*\|[0-9]+[a-zA-Z_]*>")
-        command_pattern = re.compile("(users)|(channels)|(words)")
+        group_pattern = re.compile("#[a-zA-Z0-9_]+")
 
         if command_text.count(' ') == 0:
-            if date_pattern.match(command_text.split(' ')[0]):
-                date = command_text.split(' ')[0]
-                channel = self.CHANNEL
-            elif channel_pattern.match(command_text.split(' ')[0]):
-                # date = datetime.datetime.today().strftime("%m/%d/%y")
-                channel = command_text.split('#')[1].split('|')[0]
-            elif command_pattern.match(command_text.split(' ')[0]):
-                command = command_text.split(' ')[0]
+            if channel_pattern.match(command_text.split(' ')[0]):
+                stat_channel = command_text.split('#')[1].split('|')[0]
+            elif group_pattern.match(command_text.split(' ')[0]):
+                print("Matches group pattern")
+                stat_channel = CallWrapper(token).get_channel_info_by_name(command_text.split('#')[1])['id']
 
-        elif command_text.count(' ') == 1:
-            if channel_pattern.match(command_text.split(' ')[0]) and date_pattern.match(command_text.split(' ')[1]):
-                channel = command_text.split('#')[1].split('|')[0]
-                date = command_text.split(' ')[1]
-
-        if date is not None:
-            if date == 'today':
-                date = datetime.datetime.today().strftime("%m/%d/%y")
-            elif date == 'yesterday':
-                date = datetime.datetime.today() - timedelta(days=1)
-                date = date.strftime("%m/%d/%y")
-
-        if channel is not None:
-            self.channel = channel.upper()
-        self.date = date
-        self.command = command
+        if stat_channel is not None:
+            self.STAT_CHANNEL = stat_channel.upper()
+        else:
+            self.STAT_CHANNEL = self.CHANNEL
 
     def execute_command(self):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
 
+        # Parse the channel, if given
         self.parse_arguments()
 
-        if self.command is None:
-            self.pinstats()
-        elif self.command == "channels":
-            self.chanstats()
-
-    def chanstats(self):
-        slack_client = self.CLIENT
-        token = botconfig.SLACK_BOT_TOKEN
-
-        # First, we need to grab both the channels (public) and groups (private)
-        # from the Slack API
-        channels_json = slack_client.api_call("channels.list", token=token)
-        groups_json = slack_client.api_call("groups.list", token=token)
-        # Extract the individual channels & group JSON Arrays from the responses
-        channel_list = channels_json['channels'] + groups_json['groups']
-
-        channel_dict = dict()
-        for channel in channel_list:
-            if channel['name'][0].isdigit():
-                # Grab the list of pins for this channel from the Slack API
-                pins_json = slack_client.api_call("pins.list", token=token, channel=channel['id'])
-                pins_list = pins_json['items']
-                # print("channel ID: {0} pins: {1}".format(channel, pins_list))
-                if len(pins_list) >= 95:
-                    sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
-
-                    start_time = datetime.datetime.fromtimestamp(sorted_list[0]['created'])
-                    end_time = datetime.datetime.fromtimestamp(sorted_list[len(sorted_list) - 1]['created'])
-                    time_diff = end_time - start_time
-
-                    channel_dict[channel['id']] = time_diff
-        i = 0
-        for channel_id in sorted(channel_dict, key=channel_dict.get, reverse=False):
-            i += 1
-            channel_type = 'channel'
-            if channel_id.startswith('C'):
-                channel_info = slack_client.api_call(channel_type + 's.info', channel=channel_id)
-            else:
-                channel_type = 'group'
-                channel_info = slack_client.api_call(channel_type + 's.info', channel=channel_id)
-            print("{0}. #{1} {2}".format(i, channel_info[channel_type]['name'], channel_dict[channel_id]))
-        # print(channel_dict)
-
-
-    def pinstats(self):
-        slack_client = self.CLIENT
-        token = botconfig.SLACK_BOT_TOKEN
-
         # Grab the list of pins for this channel from the Slack API
-        pins_json = slack_client.api_call("pins.list", token=token, channel=self.channel)
-        pins_list = pins_json['items']
+        channel_info = CallWrapper(token).get_channel_info(self.STAT_CHANNEL)
+        pins_list = CallWrapper(token).get_pin_list(channel_info['channel'])
 
-        pin_counts, pinner_counts = self.count_pins(pins_list)
+        pin_count_today, pin_counts, pinner_counts = self.count_pins(pins_list)
         pinned_field, pinners_field = self.format_pin_fields(pin_counts, pinner_counts)
-        stats_field = self.format_stats_field(pins_list)
+        start_time, end_time, pph = self.calc_pph(sorted(pins_list, key=lambda pin: pin['created']))
+        stats_field = self.format_stats_field(channel_info, start_time, end_time, pph, pin_count_today)
 
         attachments = list()
         message = {
@@ -133,9 +89,14 @@ class Pinstats(Command):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
 
+        pin_count_today = 0
         pin_counts = dict()
         pinner_counts = dict()
         for pin in pins_list:
+            pin_timestamp = datetime.datetime.fromtimestamp(pin['created'])
+            if pin_timestamp.date() == datetime.datetime.today().date():
+                pin_count_today += 1
+
             pin_type = pin['type']
             if pin[pin_type]['user'] not in pin_counts.keys():
                 pin_counts[pin[pin_type]['user']] = 0
@@ -145,7 +106,7 @@ class Pinstats(Command):
                 pinner_counts[pin['created_by']] = 0
             pinner_counts[pin['created_by']] += 1
 
-        return pin_counts, pinner_counts
+        return pin_count_today, pin_counts, pinner_counts
 
     def format_pin_fields(self, pin_counts, pinner_counts):
         slack_client = self.CLIENT
@@ -167,40 +128,56 @@ class Pinstats(Command):
             i += 1
             user_json = slack_client.api_call("users.info", token=token, user=user_id)
             user = user_json['user']
-            pinned_field['value'] += "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pin_counts[user_id],
-                                                                 " messages\n")
+            pinned_field['value'] += "{0}. {1}: {2} {3}".format(i, user['name'], pin_counts[user_id], "messages\n")
         i = 0
         for user_id in sorted(pinner_counts, key=pinner_counts.get, reverse=True):
             i += 1
             user_json = slack_client.api_call("users.info", token=token, user=user_id)
             user = user_json['user']
-            pinners_field['value'] += "{0}{1}{2}{3}{4}{5}".format(i, ". ", user['name'], ": ", pinner_counts[user_id],
-                                                                  " pins\n")
+            pinners_field['value'] += "{0}. {1}: {2} {3}".format(i, user['name'], pinner_counts[user_id], "pins\n")
 
         return pinned_field, pinners_field
 
-    def format_stats_field(self, pins_list):
+    def format_stats_field(self, channel_info, start_time, end_time, pph, pin_count_today):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
 
-        sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
-        channel_info = slack_client.api_call('channels.info', channel=sorted_list[0]['channel'])
+        # sorted_list = sorted(pins_list, key=lambda pin: pin['created'])
+        # channel_info = slack_client.api_call('channels.info', channel=sorted_list[0]['channel'])
         stats_field = {
             'title': "Pinstats for #{0}:".format(channel_info['channel']['name']),
             'value': "",
             'short': False
         }
-        start_time = datetime.datetime.fromtimestamp(sorted_list[0]['created'])
-        end_time = datetime.datetime.fromtimestamp(sorted_list[len(sorted_list) - 1]['created'])
+
+        stats_field['value'] += "Pinstart: {0}\n".format(start_time.strftime("%m/%d/%y %I:%M:%S %p"))
+        if end_time is not None:
+            stats_field['value'] += "Pinend: {0}\n".format(end_time.strftime("%m/%d/%y %I:%M:%S %p"))
+            stats_field['value'] += "Time to completion: {0}\n".format(end_time - start_time)
+        stats_field['value'] += "PPH: {0:.2f}\n".format(pph)
+        stats_field['value'] += "Pins today: {0}\n".format(pin_count_today)
+        return stats_field
+
+    def calc_pph(self, sorted_pin_list):
+        start_time = datetime.datetime.fromtimestamp(sorted_pin_list[0]['created'])
+        end_time = datetime.datetime.fromtimestamp(sorted_pin_list[len(sorted_pin_list) - 1]['created'])
         time_diff = end_time - start_time
-        print("time diff: {0}".format(time_diff))
-        hours = time_diff.days * 8
+
+        days = time_diff.days
+        # If number of days is > 5, the channel has probably lasted over a week.
+        # Take 5 days of each 7 for the calculation for more accuracy
+        if days > 5:
+            days = (days / 7) * 5
+
+        # Take 8 hours of each day for more accuracy
+        hours = days * 8
+
+        # If the channel is < 1 day old, just take the seconds & calculate the # of hours
         if hours == 0:
             hours = time_diff.seconds / 60 / 60
-        pph = len(sorted_list) / hours
-        stats_field['value'] += "Pinstart: {0}\n".format(start_time.strftime("%m/%d/%y %I:%M:%S %p"))
-        if len(sorted_list) >= 95:
-            stats_field['value'] += "Pinend: {0}\n".format(end_time.strftime("%m/%d/%y %I:%M:%S %p"))
-            stats_field['value'] += "Time to completion: {0}\n".format(time_diff)
-        stats_field['value'] += "PPH: {0:.2f}\n".format(pph)
-        return stats_field
+        pph = len(sorted_pin_list) / hours
+
+        # If the channel is not complete, set end_time null
+        if len(sorted_pin_list) < 95:
+            end_time = None
+        return start_time, end_time, pph
