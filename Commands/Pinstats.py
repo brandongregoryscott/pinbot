@@ -27,6 +27,28 @@ def calc_pph(sorted_pin_list):
         end_time = None
     return start_time, end_time, pph
 
+
+def count_pins(pins_list):
+    pin_count_today = 0
+    pin_counts = dict()
+    pinner_counts = dict()
+    for pin in pins_list:
+        pin_timestamp = datetime.datetime.fromtimestamp(pin['created'])
+        if pin_timestamp.date() == datetime.datetime.today().date():
+            pin_count_today += 1
+
+        pin_type = pin['type']
+        if pin[pin_type]['user'] not in pin_counts.keys():
+            pin_counts[pin[pin_type]['user']] = 0
+        pin_counts[pin[pin_type]['user']] += 1
+
+        if pin['created_by'] not in pinner_counts.keys():
+            pinner_counts[pin['created_by']] = 0
+        pinner_counts[pin['created_by']] += 1
+
+    return pin_count_today, pin_counts, pinner_counts
+
+
 class Pinstats(Command):
     def __init__(self, client, command_head, command_text, channel):
         Command.__init__(self, client, command_head, command_text, channel)
@@ -43,7 +65,6 @@ class Pinstats(Command):
             if channel_pattern.match(command_text.split(' ')[0]):
                 stat_channel = command_text.split('#')[1].split('|')[0]
             elif group_pattern.match(command_text.split(' ')[0]):
-                print("Matches group pattern")
                 stat_channel = CallWrapper(token).get_channel_info_by_name(command_text.split('#')[1])['id']
 
         if stat_channel is not None:
@@ -62,7 +83,7 @@ class Pinstats(Command):
         channel_info = CallWrapper(token).get_channel_info(self.STAT_CHANNEL)
         pins_list = CallWrapper(token).get_pin_list(channel_info['channel'])
 
-        pin_count_today, pin_counts, pinner_counts = self.count_pins(pins_list)
+        pin_count_today, pin_counts, pinner_counts = count_pins(pins_list)
         pinned_field, pinners_field = self.format_pin_fields(pin_counts, pinner_counts)
         start_time, end_time, pph = calc_pph(pins_list)
         stats_field = self.format_stats_field(channel_info, start_time, end_time, pph, pin_count_today)
@@ -81,26 +102,6 @@ class Pinstats(Command):
                               channel=self.CHANNEL,
                               attachments=attachments,
                               as_user=True)
-
-    def count_pins(self, pins_list):
-        pin_count_today = 0
-        pin_counts = dict()
-        pinner_counts = dict()
-        for pin in pins_list:
-            pin_timestamp = datetime.datetime.fromtimestamp(pin['created'])
-            if pin_timestamp.date() == datetime.datetime.today().date():
-                pin_count_today += 1
-
-            pin_type = pin['type']
-            if pin[pin_type]['user'] not in pin_counts.keys():
-                pin_counts[pin[pin_type]['user']] = 0
-            pin_counts[pin[pin_type]['user']] += 1
-
-            if pin['created_by'] not in pinner_counts.keys():
-                pinner_counts[pin['created_by']] = 0
-            pinner_counts[pin['created_by']] += 1
-
-        return pin_count_today, pin_counts, pinner_counts
 
     def format_pin_fields(self, pin_counts, pinner_counts):
         slack_client = self.CLIENT

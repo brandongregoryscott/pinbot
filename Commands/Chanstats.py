@@ -3,7 +3,7 @@ import datetime
 
 from Helpers.CallWrapper import CallWrapper
 from Models.Command import Command
-from Commands.Pinstats import calc_pph
+from Commands import Pinstats
 
 
 class Chanstats(Command):
@@ -69,7 +69,7 @@ class Chanstats(Command):
         for channel_id in fastest_chan_list:
             i += 1
             pin_list = pin_list_dict[channel_id]
-            start_time, end_time, pph = calc_pph(pin_list)
+            start_time, end_time, pph = Pinstats.calc_pph(pin_list)
             fastest_field['value'] += "{0:1}. #{1:<25} {2:<21} {3:<4.2f}\n".format(i,
                                                                                    channel_name_dict[channel_id],
                                                                                    str(end_time - start_time), pph)
@@ -79,7 +79,7 @@ class Chanstats(Command):
         for channel_id in slowest_chan_list:
             i += 1
             pin_list = pin_list_dict[channel_id]
-            start_time, end_time, pph = calc_pph(pin_list)
+            start_time, end_time, pph = Pinstats.calc_pph(pin_list)
             slowest_field['value'] += "{0}. #{1:<25} {2:<21} {3:<4.2f}\n".format(i,
                                                                                  channel_name_dict[channel_id],
                                                                                  str(end_time - start_time), pph)
