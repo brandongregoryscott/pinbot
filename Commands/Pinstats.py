@@ -11,21 +11,24 @@ def calc_pph(sorted_pin_list):
     start_time = datetime.datetime.fromtimestamp(sorted_pin_list[len(sorted_pin_list) - 1]['created'])
     time_diff = end_time - start_time
 
-    days = time_diff.days
-    # If number of days is > 5, the channel has probably lasted over a week.
-    # Take 5 days of each 7 for the calculation for more accuracy
-    if days > 5:
-        days = (days / 7) * 5
+    # Calculate the hours from the starting day by finding the time diff of the first pin & 5 PM
+    hours = ((start_time.replace(hour=17) - start_time).seconds / 60 / 60)
 
-    # Take 8 hours of each day for more accuracy
-    hours = (days * 8) + (time_diff.seconds / 60 / 60)
+    # Take 8 hours of each weekday from (start + 1 .. end - 1)
+    for single_date in (start_time + timedelta(days=n) for n in range(1, time_diff.days)):
+        if single_date.isoweekday() in range(0, 5):
+            hours += 8
 
+    # Add on any extra hours from the end day via the seconds field
+    hours += (time_diff.seconds / 60 / 60)
+
+    # Calculate PPH
     pph = len(sorted_pin_list) / hours
 
     # If the channel is not complete, set end_time null
     if len(sorted_pin_list) < 95:
         end_time = None
-    return start_time, end_time, pph
+    return start_time, end_time, pph, hours
 
 
 def count_pins(pins_list):
