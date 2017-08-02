@@ -88,7 +88,7 @@ class Pinstats(Command):
 
         pin_count_today, pin_counts, pinner_counts = count_pins(pins_list)
         pinned_field, pinners_field = self.format_pin_fields(pin_counts, pinner_counts)
-        start_time, end_time, pph = calc_pph(pins_list)
+        start_time, end_time, pph, hours = calc_pph(pins_list)
         stats_field = self.format_stats_field(channel_info, start_time, end_time, pph, pin_count_today)
 
         attachments = list()
