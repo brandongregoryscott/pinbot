@@ -34,43 +34,75 @@ class Random(Command):
         random_pin = random.choice(pins_list)
 
         # For right now, we'll only pick from text pins
-        while random_pin['type'] != 'message':
+        while random_pin['type'] != 'message' and random_pin['type'] != 'file':
             random_pin = random.choice(pins_list)
-
-        message = random_pin['message']
-
-        # Grab information about the posting user from the Slack API
-        user_json = slack_client.api_call("users.info", token=token, user=message['user'])
-        user = user_json['user']
-
-        # The user's 'profile' JSON object contains more specific info about them
-        # https://api.slack.com/methods/users.info
-        poster = user['profile']
 
         # Create an array to hold the attachment object
         attachment = []
 
-        # This attachment object will contain only one pin object
-        # Parse out the pertinent data from the objects obtained earlier
-        # This ensures proper formatting for the shared pin
-        pin_object = {
-            'from_url': message['permalink'],
-            'channel_id': message['pinned_to'],
-            'text': message['text'],
-            'author_icon': poster['image_32'],
-            'author_name': user['name'],
-            'author_link': message['permalink'],
-            'channel_name': random_channel['name'],
-            'color': "D0D0D0", 'ts': message['ts'],
-            'mrkdwn_in': ['text'],
-            'footer': "Posted in " + random_channel['name'],
-            'is_share': True,
-            'is_msg_unfurl': True
-        }
+        if random_pin['type'] == 'message':
+            message = random_pin['message']
 
-        # Finally, append this pin object to the attachment array and post it
-        attachment.append(pin_object)
-        slack_client.api_call('chat.postMessage',
-                              channel=channel,
-                              attachments=attachment,
-                              as_user=True)
+            # Grab information about the posting user from the Slack API
+            user_json = slack_client.api_call("users.info", token=token, user=message['user'])
+            user = user_json['user']
+
+            # The user's 'profile' JSON object contains more specific info about them
+            # https://api.slack.com/methods/users.info
+            poster = user['profile']
+            # This attachment object will contain only one pin object
+            # Parse out the pertinent data from the objects obtained earlier
+            # This ensures proper formatting for the shared pin
+            pin_object = {
+                'from_url': message['permalink'],
+                'channel_id': message['pinned_to'],
+                'text': message['text'],
+                'author_icon': poster['image_32'],
+                'author_name': user['name'],
+                'author_link': message['permalink'],
+                'channel_name': random_channel['name'],
+                'color': "D0D0D0", 'ts': message['ts'],
+                'mrkdwn_in': ['text'],
+                'footer': "Posted in " + random_channel['name'],
+                'is_share': True,
+                'is_msg_unfurl': True
+            }
+
+            # Finally, append this pin object to the attachment array and post it
+            attachment.append(pin_object)
+            slack_client.api_call('chat.postMessage',
+                                  channel=channel,
+                                  attachments=attachment,
+                                  as_user=True)
+        elif random_pin['type'] == 'file':
+            file = random_pin['file']
+
+            # Grab information about the posting user from the Slack API
+            user_json = slack_client.api_call("users.info", token=token, user=file['user'])
+            user = user_json['user']
+
+            # The user's 'profile' JSON object contains more specific info about them
+            # https://api.slack.com/methods/users.info
+            poster = user['profile']
+
+            pin_object = {
+                'image_url': file['permalink'],
+                'channel_id': file['pinned_to'],
+                'title': file['title'],
+                'title_link': file['url_private'],
+                'author_icon': poster['image_32'],
+                'author_name': user['name'],
+                'channel_name': random_channel['name'],
+                'color': "D0D0D0", 'ts': file['timestamp'],
+                'mrkdwn_in': ['title'],
+                'footer': "Posted in " + random_channel['name'],
+                'is_share': True,
+                'is_msg_unfurl': True
+            }
+
+            # Finally, append this pin object to the attachment array and post it
+            attachment.append(pin_object)
+            slack_client.api_call('chat.postMessage',
+                                  channel=channel,
+                                  attachments=attachment,
+                                  as_user=True)

@@ -5,30 +5,43 @@ from Commands.Random import Random
 from Commands.Clap import Clap
 from Commands.LulWall import LulWall
 from Commands.WalledGarden import WalledGarden
+from Commands.Pinstats import Pinstats
+from Commands.Chanstats import Chanstats
+from Commands.Story import Story
 
-# array containing all commands that pinbot can use
-COMMANDS = ["vaporwave", ":train:", "random", "wall", "build", "lul", "clap", "wg"]
+# arrays containing all commands that pinbot can use
 
-
-def valid(command):
-    return command in COMMANDS
-
+VAPORWAVE_COMMANDS = ["vw", "vaporwave", "vapor"]
+TRAIN_COMMANDS = ["train", ":train:"]
+RANDOM_COMMANDS = ["r", "rand", "random"]
+LULWALL_COMMANDS = ["lul", "wall", "build"]
+CLAP_COMMANDS = ["clap", ":clap:"]
+WG_COMMANDS = ["wg", "walledgarden", "2016"]
+PINSTATS_COMMANDS = ["ps", "pinstats"]
+CHANSTATS_COMMANDS = ["cs", "chanstats"]
+STORY_COMMANDS = ["story", "pinstory"]
 
 def build_command(client, command, channel):
     command_head = command.split(" ", 1)[0]
     command_text = command.replace(command_head + " ", "", 1)
-    if command_head == COMMANDS[0]:
+    if command_head in VAPORWAVE_COMMANDS:
         return Vaporwave(client, command_head, command_text, channel)
-    elif command_head == COMMANDS[1]:
+    elif command_head in TRAIN_COMMANDS:
         return Train(client, command_head, command_text, channel)
-    elif command_head == COMMANDS[2]:
+    elif command_head in RANDOM_COMMANDS:
         return Random(client, command_head, command_text, channel)
-    elif command_head == COMMANDS[3] or command_head == COMMANDS[4] or command_head == COMMANDS[5]:
+    elif command_head in LULWALL_COMMANDS:
         return LulWall(client, command_head, command_text, channel)
-    elif command_head == COMMANDS[6]:
+    elif command_head in CLAP_COMMANDS:
         return Clap(client, command_head, command_text, channel)
-    elif command_head == COMMANDS[7]:
+    elif command_head in WG_COMMANDS:
         return WalledGarden(client, command_head, command_text, channel)
+    elif command_head in PINSTATS_COMMANDS:
+        return Pinstats(client, command_head, command_text, channel)
+    elif command_head in CHANSTATS_COMMANDS:
+        return Chanstats(client, command_head, command_text, channel)
+    elif command_head in STORY_COMMANDS:
+        return Story(client, command_head, command_text, channel)
     else:
         return Default(client, command_head, command_text, channel)
 
