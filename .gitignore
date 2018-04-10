@@ -167,3 +167,10 @@ flycheck_*.el
 
 # bot config
 botconfig.py
+
+.idea/
+
+bin/
+
+include/
+
