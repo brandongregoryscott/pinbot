@@ -8,14 +8,15 @@ class Random(Command):
     def __init__(self, client, command_head, command_text, channel):
         Command.__init__(self, client, command_head, command_text, channel)
 
-    def execute_command(self):
+    def get_random_pin(self, type):
         slack_client = self.CLIENT
         token = botconfig.SLACK_BOT_TOKEN
-        channel = self.CHANNEL
+
         # First, we need to grab both the channels (public) and groups (private)
         # from the Slack API
         channels_json = slack_client.api_call("channels.list", token=token)
         groups_json = slack_client.api_call("groups.list", token=token)
+
         # Extract the individual channels & group JSON Arrays from the responses
         channel_list = channels_json['channels'] + groups_json['groups']
 
@@ -34,14 +35,20 @@ class Random(Command):
         random_pin = random.choice(pins_list)
 
         # For right now, we'll only pick from text pins
-        while random_pin['type'] != 'message' and random_pin['type'] != 'file':
+        while random_pin['type'] != type:
             random_pin = random.choice(pins_list)
+
+        return random_pin, random_channel
+
+    def create_attachment(self, pin, channel):
+        slack_client = self.CLIENT
+        token = botconfig.SLACK_BOT_TOKEN
 
         # Create an array to hold the attachment object
         attachment = []
 
-        if random_pin['type'] == 'message':
-            message = random_pin['message']
+        if pin['type'] == 'message':
+            message = pin['message']
 
             # Grab information about the posting user from the Slack API
             user_json = slack_client.api_call("users.info", token=token, user=message['user'])
@@ -60,22 +67,15 @@ class Random(Command):
                 'author_icon': poster['image_32'],
                 'author_name': user['name'],
                 'author_link': message['permalink'],
-                'channel_name': random_channel['name'],
+                'channel_name': channel['name'],
                 'color': "D0D0D0", 'ts': message['ts'],
                 'mrkdwn_in': ['text'],
-                'footer': "Posted in " + random_channel['name'],
+                'footer': "Posted in " + channel['name'],
                 'is_share': True,
                 'is_msg_unfurl': True
             }
-
-            # Finally, append this pin object to the attachment array and post it
-            attachment.append(pin_object)
-            slack_client.api_call('chat.postMessage',
-                                  channel=channel,
-                                  attachments=attachment,
-                                  as_user=True)
-        elif random_pin['type'] == 'file':
-            file = random_pin['file']
+        elif pin['type'] == 'file':
+            file = pin['file']
 
             # Grab information about the posting user from the Slack API
             user_json = slack_client.api_call("users.info", token=token, user=file['user'])
@@ -92,17 +92,28 @@ class Random(Command):
                 'title_link': file['url_private'],
                 'author_icon': poster['image_32'],
                 'author_name': user['name'],
-                'channel_name': random_channel['name'],
+                'channel_name': channel['name'],
                 'color': "D0D0D0", 'ts': file['timestamp'],
                 'mrkdwn_in': ['title'],
-                'footer': "Posted in " + random_channel['name'],
+                'footer': "Posted in " + channel['name'],
                 'is_share': True,
                 'is_msg_unfurl': True
             }
 
-            # Finally, append this pin object to the attachment array and post it
-            attachment.append(pin_object)
-            slack_client.api_call('chat.postMessage',
-                                  channel=channel,
-                                  attachments=attachment,
-                                  as_user=True)
+        # Finally, append this pin object to the attachment array and return it
+        attachment.append(pin_object)
+
+        return attachment
+
+    def execute_command(self):
+        slack_client = self.CLIENT
+        channel = self.CHANNEL
+
+        random_pin, random_channel = self.get_random_pin(type=random.choice(['message', 'message', 'message', 'file']))
+
+        attachment = self.create_attachment(random_pin, random_channel)
+
+        slack_client.api_call('chat.postMessage',
+                              channel=channel,
+                              attachments=attachment,
+                              as_user=True)
