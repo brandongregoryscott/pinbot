@@ -1,0 +1,1 @@
+bot: python pinbot.py
