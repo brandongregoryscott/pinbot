@@ -42,7 +42,7 @@ class Random(Command):
         slack_client = self.CLIENT
         channel = self.CHANNEL
 
-        random_pin, random_channel = self.get_random_pin(type=random.choice(['message', 'message', 'message', 'file']))
+        random_pin, random_channel = self.get_random_pin(type=random.choice(['message', 'message', 'message', 'message', 'message', 'file']))
 
         attachment = CallWrapper(botconfig.SLACK_BOT_TOKEN).create_pin_attachment(random_pin, random_channel)
 
