@@ -21,22 +21,19 @@ class Random(Command):
         channel_list = channels_json['channels'] + groups_json['groups']
 
         # Now, we will choose a random 'sadbois' channel
-        random_channel = random.choice(channel_list)
-
-        # JGP - simplified while logic
-        while not random_channel['name'][0].isdigit():
-            random_channel = random.choice(channel_list)
+        random.shuffle(channel_list)
+        random_channel = next((x for x in channel_list if x['name'][0].isdigit()))
 
         # Grab the list of pins for this channel from the Slack API
         pins_json = slack_client.api_call("pins.list", token=token, channel=random_channel['id'])
         pins_list = pins_json['items']
 
         # Select a random pin from the list
-        random_pin = random.choice(pins_list)
+        random.shuffle(pins_list)
+        random_pin = next((x for x in pins_list if x['type'] == type), None)
 
-        # For right now, we'll only pick from text pins
-        while random_pin['type'] != type:
-            random_pin = random.choice(pins_list)
+        if random_pin is None:
+            self.get_random_pin(type)
 
         return random_pin, random_channel
 
