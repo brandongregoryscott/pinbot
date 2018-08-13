@@ -6,6 +6,7 @@ from slackclient import SlackClient
 
 import botconfig
 from Helpers import CommandFactory
+from Helpers.CallWrapper import CallWrapper
 
 
 class SlackWrapper(object):
@@ -53,10 +54,12 @@ class SlackWrapper(object):
                     print(str(output).encode('utf-8'))
                 if output['type'] == 'message' and 'text' in output and at_bot in output['text']:
                     return output['text'].split(at_bot)[1].strip().lower(), output['channel']
-                if output['type'] == 'message' and 'subtype' in output and output['subtype'] == 'pinned_item' and 'attachments' in output:
+                if output['type'] == 'pin_added':
+                    channel_response = CallWrapper(self.SLACK_BOT_TOKEN).get_channel_info(output['item']['channel'])
+                    attachments = CallWrapper(self.SLACK_BOT_TOKEN).create_pin_attachment(output['item'], channel_response['channel'])
                     client.api_call('chat.postMessage',
-                                    channel=output['channel'],
-                                    attachments=output['attachments'],
+                                    channel=output['channel_id'],
+                                    attachments=attachments,
                                     as_user=True)
         return None, None
 

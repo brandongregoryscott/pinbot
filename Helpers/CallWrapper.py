@@ -57,3 +57,68 @@ class CallWrapper(object):
             if channel_name == channel_info['name']:
                 return channel_info
         raise ValueError("Channel name not found")
+
+    def create_pin_attachment(self, pin, channel):
+        slack_client = self.SLACK_CLIENT
+        token = self.SLACK_BOT_TOKEN
+
+        # Create an array to hold the attachment object
+        attachment = []
+
+        if pin['type'] == 'message':
+            message = pin['message']
+
+            # Grab information about the posting user from the Slack API
+            user_json = slack_client.api_call("users.info", token=token, user=message['user'])
+            user = user_json['user']
+
+            # The user's 'profile' JSON object contains more specific info about them
+            # https://api.slack.com/methods/users.info
+            poster = user['profile']
+            # This attachment object will contain only one pin object
+            # Parse out the pertinent data from the objects obtained earlier
+            # This ensures proper formatting for the shared pin
+            pin_object = {
+                'from_url': message['permalink'],
+                'channel_id': message['pinned_to'],
+                'text': message['text'],
+                'author_icon': poster['image_32'],
+                'author_name': user['name'],
+                'author_link': message['permalink'],
+                'channel_name': channel['name'],
+                'color': "D0D0D0", 'ts': message['ts'],
+                'mrkdwn_in': ['text'],
+                'footer': "Posted in " + channel['name'],
+                'is_share': True,
+                'is_msg_unfurl': True
+            }
+        elif pin['type'] == 'file':
+            file = pin['file']
+
+            # Grab information about the posting user from the Slack API
+            user_json = slack_client.api_call("users.info", token=token, user=file['user'])
+            user = user_json['user']
+
+            # The user's 'profile' JSON object contains more specific info about them
+            # https://api.slack.com/methods/users.info
+            poster = user['profile']
+
+            pin_object = {
+                'image_url': file['permalink'],
+                'channel_id': file['pinned_to'],
+                'title': file['title'],
+                'title_link': file['url_private'],
+                'author_icon': poster['image_32'],
+                'author_name': user['name'],
+                'channel_name': channel['name'],
+                'color': "D0D0D0", 'ts': file['timestamp'],
+                'mrkdwn_in': ['title'],
+                'footer': "Posted in " + channel['name'],
+                'is_share': True,
+                'is_msg_unfurl': True
+            }
+
+        # Finally, append this pin object to the attachment array and return it
+        attachment.append(pin_object)
+
+        return attachment
