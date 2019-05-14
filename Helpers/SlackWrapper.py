@@ -1,6 +1,7 @@
 import _thread
 import datetime
 import time
+import json
 
 from slackclient import SlackClient
 
@@ -51,7 +52,7 @@ class SlackWrapper(object):
         if output_list and len(output_list) > 0:
             for output in output_list:
                 if debug:
-                    print(str(output).encode('utf-8'))
+                    print(json.dumps(output, indent=4, sort_keys=True))
                 if output['type'] == 'message' and 'text' in output and at_bot in output['text']:
                     return output['text'].split(at_bot)[1].strip().lower(), output['channel']
                 if output['type'] == 'pin_added':
