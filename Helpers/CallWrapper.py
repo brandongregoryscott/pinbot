@@ -78,29 +78,13 @@ class CallWrapper(object):
             # This attachment object will contain only one pin object
             # Parse out the pertinent data from the objects obtained earlier
             # This ensures proper formatting for the shared pin
-            pin_object = {
-                'from_url': message['permalink'],
-                'channel_id': message['pinned_to'],
-                'text': message['text'],
-                'author_icon': poster['image_32'],
-                'author_name': user['name'],
-                'author_link': message['permalink'],
-                'channel_name': channel['name'],
-                'color': "D0D0D0", 'ts': message['ts'],
-                'mrkdwn_in': ['text'],
-                'footer': "Posted in " + channel['name'],
-                'is_share': True,
-                'is_msg_unfurl': True
-            }
 
             if 'files' in message and len(message['files']) > 0:
                 file = list(message['files']).pop()
-                attachment.append({
-                    'author_icon': poster['image_32'],
-                    'author_name': user['name'],
-                })
                 attachment.append(
                 {
+                    'author_icon': poster['image_32'],
+                    'author_name': user['name'],
                     "title": file["title"],
                     "type": "image",
                     "image_url": file["permalink"],
