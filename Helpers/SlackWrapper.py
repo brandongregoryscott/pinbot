@@ -58,10 +58,12 @@ class SlackWrapper(object):
                 if output['type'] == 'pin_added':
                     channel_response = CallWrapper(self.SLACK_BOT_TOKEN).get_channel_info(output['item']['channel'])
                     attachments = CallWrapper(self.SLACK_BOT_TOKEN).create_pin_attachment(output['item'], channel_response['channel'])
-                    client.api_call('chat.postMessage',
+                    response = client.api_call('chat.postMessage',
                                     channel=output['channel_id'],
                                     attachments=attachments,
                                     as_user=True)
+                    if debug:
+                        print(json.dumps(response, indent=4, sort_keys=True))
         return None, None
 
     def __handle_command(self, command, channel):
