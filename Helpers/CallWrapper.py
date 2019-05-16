@@ -1,6 +1,6 @@
 from slackclient import SlackClient
 import re
-
+import json
 
 class CallWrapper(object):
     def __init__(self, api_token):
@@ -102,10 +102,35 @@ class CallWrapper(object):
                 {
                     'author_icon': poster['image_32'],
                     'author_name': user['name'],
-                    "type": "mrkdwn",
-                    "text": message['text'],
+                    'text': message['text'],
                     'ts': message['ts'],
                     'footer': "Posted in " + channel['name'],
 	            })
+        elif pin['type'] == 'file':
+            file = pin['file']
+
+            # Grab information about the posting user from the Slack API
+            user_json = slack_client.api_call("users.info", token=token, user=file['user'])
+            user = user_json['user']
+
+            # The user's 'profile' JSON object contains more specific info about them
+            # https://api.slack.com/methods/users.info
+            poster = user['profile']
+
+            attachment.append(
+            {
+                'image_url': file['permalink'],
+                'channel_id': file['pinned_to'],
+                'title': file['title'],
+                'title_link': file['url_private'],
+                'author_icon': poster['image_32'],
+                'author_name': user['name'],
+                'channel_name': channel['name'],
+                'color': "D0D0D0", 'ts': file['timestamp'],
+                'mrkdwn_in': ['title'],
+                'footer': "Posted in " + channel['name'],
+                'is_share': True,
+                'is_msg_unfurl': True
+            })
 
         return attachment

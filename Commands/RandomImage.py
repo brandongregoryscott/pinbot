@@ -2,6 +2,7 @@ from Models.Command import Command
 from Commands.Random import Random
 from Helpers.CallWrapper import CallWrapper
 import botconfig
+import json
 
 class RandomImage(Command):
     def __init__(self, client, command_head, command_text, channel):
@@ -16,7 +17,8 @@ class RandomImage(Command):
 
         attachment = CallWrapper(botconfig.SLACK_BOT_TOKEN).create_pin_attachment(random_pin, random_channel)
 
-        slack_client.api_call('chat.postMessage',
+        response = slack_client.api_call('chat.postMessage',
                               channel=channel,
                               attachments=attachment,
                               as_user=True)
+        print(json.dumps(response, indent=4, sort_keys=True))
