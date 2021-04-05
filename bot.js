@@ -43,6 +43,7 @@ const adapter = new SlackAdapter({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     scopes: [
+        "channels:history",
         "channels:join",
         "channels:read",
         "chat:write",
