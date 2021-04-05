@@ -1,0 +1,26 @@
+{
+    "author": "Brandon Scott (https://github.com/brandongregoryscott), Joshua Peters (https://github.com/joshuapeters)",
+    "bugs": {
+        "url": "https://github.com/brandongregoryscott/pinbot/issues"
+    },
+    "description": "A slack bot designed to share messages that are pinned, which was removed in a ~November 2016 Slack client update.",
+    "homepage": "https://github.com/brandongregoryscott/pinbot#readme",
+    "keywords": [
+        "slack",
+        "pin",
+        "slack-bot",
+        "pinbot"
+    ],
+    "license": "Apache-2.0",
+    "main": "index.js",
+    "name": "pinbot",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/brandongregoryscott/pinbot.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "version": "0.0.0"
+}
