@@ -227,8 +227,14 @@ module.exports = function (controller) {
         console.log("on pin_added", message);
         const { item } = message;
         const pin = item.message;
-        const poster = await bot.api.users.info({ user: pin.user });
-        const profile = poster.user.profile;
+        const userResponse = await bot.api.users.info({ user: pin.user });
+        const profile = userResponse.user.profile;
+
+        const conversationResponse = await bot.api.conversations.info({
+            channel: pin.channel,
+        });
+        const { channel } = conversationResponse;
+
         console.log("poster:", poster);
         await bot.reply(message, {
             attachments: [
@@ -245,7 +251,10 @@ module.exports = function (controller) {
                                 },
                                 {
                                     type: "mrkdwn",
-                                    text: `*${profile.display_name}*`,
+                                    text: `*${
+                                        profile.display_name ||
+                                        profile.real_name
+                                    }*`,
                                 },
                             ],
                         },
@@ -263,7 +272,7 @@ module.exports = function (controller) {
                             elements: [
                                 {
                                     type: "mrkdwn",
-                                    text: "Posted in *#032_cowbois*",
+                                    text: `Posted in *#${channel.name}*`,
                                 },
                                 {
                                     type: "mrkdwn",
