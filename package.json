@@ -30,8 +30,12 @@
         "url": "git+https://github.com/brandongregoryscott/pinbot.git"
     },
     "scripts": {
+        "build": "tsc --pretty --project tsconfig.json",
         "start": "node bot.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "devDependencies": {
+        "typescript": "4.2.3"
+    }
 }
