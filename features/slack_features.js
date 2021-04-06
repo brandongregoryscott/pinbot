@@ -239,6 +239,7 @@ module.exports = function (controller) {
                                     type: "image",
                                     image_url:
                                         "https://slack-imgs.com/?c=1&o1=wi32.he32.si&url=https%3A%2F%2Favatars.slack-edge.com%2F2020-04-23%2F1068430522807_975f2d1f06137721282a_32.jpg",
+                                    alt_text: "user avatar",
                                 },
                                 {
                                     type: "mrkdwn",
