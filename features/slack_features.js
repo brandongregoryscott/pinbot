@@ -225,6 +225,56 @@ module.exports = function (controller) {
 
     controller.on("pin_added", async (bot, message) => {
         console.log("on pin_added", message);
+        const { item } = message;
         await bot.reply(message, "Just saw a :pin:");
+        await bot.reply(message, {
+            attachments: [
+                {
+                    color: "#f2c744",
+                    blocks: [
+                        {
+                            type: "context",
+                            elements: [
+                                {
+                                    type: "image",
+                                    image_url:
+                                        "https://slack-imgs.com/?c=1&o1=wi32.he32.si&url=https%3A%2F%2Favatars.slack-edge.com%2F2020-04-23%2F1068430522807_975f2d1f06137721282a_32.jpg",
+                                },
+                                {
+                                    type: "mrkdwn",
+                                    text: "*brill*",
+                                },
+                            ],
+                        },
+                        {
+                            type: "context",
+                            elements: [
+                                {
+                                    type: "mrkdwn",
+                                    text: "i was like 'thats a dick'",
+                                },
+                            ],
+                        },
+                        {
+                            type: "context",
+                            elements: [
+                                {
+                                    type: "mrkdwn",
+                                    text: "Posted in *#032_cowbois*",
+                                },
+                                {
+                                    type: "mrkdwn",
+                                    text: "*|*",
+                                },
+                                {
+                                    type: "mrkdwn",
+                                    text: "_Oct 16th, 2017_",
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
     });
 };
