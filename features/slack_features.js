@@ -226,7 +226,8 @@ module.exports = function (controller) {
     controller.on("pin_added", async (bot, message) => {
         console.log("on pin_added", message);
         const { item } = message;
-        await bot.reply(message, "Just saw a :pin:");
+        const poster = await bot.api.users.info({ user: message.user });
+        console.log("poster:", poster);
         await bot.reply(message, {
             attachments: [
                 {
