@@ -45,6 +45,8 @@ const adapter = new SlackAdapter({
     scopes: [
         "pins:read", // Necessary to listen to pin events
         "channels:history", // Necessary to listen to message events
+        "users:read",
+        "users.profile:read",
         "channels:join",
         "channels:read",
         "chat:write",
