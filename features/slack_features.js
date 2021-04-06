@@ -231,7 +231,7 @@ module.exports = function (controller) {
         const profile = userResponse.user.profile;
 
         const conversationResponse = await bot.api.conversations.info({
-            channel: pin.channel,
+            channel: item.channel,
         });
         const { channel } = conversationResponse;
 
