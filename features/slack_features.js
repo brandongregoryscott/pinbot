@@ -222,4 +222,9 @@ module.exports = function (controller) {
     controller.on("dialog_cancellation", async (bot, message) => {
         await bot.reply(message, "Got a dialog cancellation");
     });
+
+    controller.on("pin_added", async (bot, message) => {
+        console.log("on pin_added", message);
+        await bot.reply(message, "Just saw a :pin:");
+    });
 };
