@@ -107,10 +107,6 @@ controller.ready(() => {
     }
 });
 
-controller.on("message", async (bot, message) => {
-    await bot.reply(message, "I heard a message!");
-});
-
 controller.webserver.get("/", (req, res) => {
     res.send(`This app is running Botkit ${controller.version}.`);
 });
