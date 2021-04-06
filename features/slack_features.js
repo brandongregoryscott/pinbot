@@ -226,7 +226,9 @@ module.exports = function (controller) {
     controller.on("pin_added", async (bot, message) => {
         console.log("on pin_added", message);
         const { item } = message;
-        const poster = await bot.api.users.info({ user: message.user });
+        const pin = item.message;
+        const poster = await bot.api.users.info({ user: pin.user });
+        const profile = poster.user.profile;
         console.log("poster:", poster);
         await bot.reply(message, {
             attachments: [
@@ -238,13 +240,12 @@ module.exports = function (controller) {
                             elements: [
                                 {
                                     type: "image",
-                                    image_url:
-                                        "https://slack-imgs.com/?c=1&o1=wi32.he32.si&url=https%3A%2F%2Favatars.slack-edge.com%2F2020-04-23%2F1068430522807_975f2d1f06137721282a_32.jpg",
+                                    image_url: profile.image_32,
                                     alt_text: "user avatar",
                                 },
                                 {
                                     type: "mrkdwn",
-                                    text: "*brill*",
+                                    text: `*${profile.display_name}*`,
                                 },
                             ],
                         },
@@ -253,7 +254,7 @@ module.exports = function (controller) {
                             elements: [
                                 {
                                     type: "mrkdwn",
-                                    text: "i was like 'thats a dick'",
+                                    text: pin.text,
                                 },
                             ],
                         },
@@ -270,7 +271,7 @@ module.exports = function (controller) {
                                 },
                                 {
                                     type: "mrkdwn",
-                                    text: "_Oct 16th, 2017_",
+                                    text: `_${pin.ts}_`,
                                 },
                             ],
                         },
