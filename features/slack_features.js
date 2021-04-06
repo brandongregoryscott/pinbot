@@ -235,7 +235,7 @@ module.exports = function (controller) {
         });
         const { channel } = conversationResponse;
 
-        console.log("poster:", poster);
+        console.log("profile, channel:", profile, channel);
         await bot.reply(message, {
             attachments: [
                 {
