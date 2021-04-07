@@ -32,7 +32,6 @@ const adapter = new SlackAdapter({
         "chat:write.customize",
         "groups:read",
     ],
-    verificationToken: process.env.VERIFICATION_TOKEN,
 });
 
 adapter.use(new SlackEventMiddleware());
@@ -48,6 +47,8 @@ controller.ready(() => {
     controller.loadModules(`${__dirname}/events`);
     controller.loadModules(`${__dirname}/commands`);
 });
+
+console.log("controller.getConfig()", controller.getConfig());
 
 controller.webserver.get("/", (req, res) => {
     res.send(`This app is running Botkit ${controller.version}.`);
