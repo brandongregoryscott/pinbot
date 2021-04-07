@@ -22,7 +22,7 @@
         "pinbot"
     ],
     "license": "Apache-2.0",
-    "main": "bot.js",
+    "main": "dist/bot.js",
     "name": "pinbot",
     "private": true,
     "repository": {
@@ -31,11 +31,13 @@
     },
     "scripts": {
         "build": "tsc --pretty --project tsconfig.json",
-        "start": "node bot.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "start": "node dist/bot.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "tsc --pretty --project tsconfig.json --watch"
     },
     "version": "1.0.0",
     "devDependencies": {
+        "prettier": "2.2.1",
         "typescript": "4.2.3"
     }
 }

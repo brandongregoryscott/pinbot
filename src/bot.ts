@@ -1,52 +1,28 @@
-//  __   __  ___        ___
-// |__) /  \  |  |__/ |  |
-// |__) \__/  |  |  \ |  |
-
-// This is the main file for the pinbot bot.
-
-// Import Botkit's core features
-const { Botkit } = require("botkit");
-const { BotkitCMSHelper } = require("botkit-plugin-cms");
-
-// Import a platform-specific adapter for slack.
-
-const {
+import { Botkit } from "botkit";
+import {
     SlackAdapter,
     SlackMessageTypeMiddleware,
     SlackEventMiddleware,
-} = require("botbuilder-adapter-slack");
-
-const { MongoDbStorage } = require("botbuilder-storage-mongodb");
+} from "botbuilder-adapter-slack";
+import dotenv from "dotenv";
 
 // Load process.env values from .env file
-require("dotenv").config();
-
-let storage = null;
-// if (process.env.MONGO_URI) {
-//     storage = mongoStorage = new MongoDbStorage({
-//         url: process.env.MONGO_URI,
-//     });
-// }
+dotenv.config();
 
 const adapter = new SlackAdapter({
-    // REMOVE THIS OPTION AFTER YOU HAVE CONFIGURED YOUR APP!
-    enable_incomplete: true,
-
-    // parameters used to secure webhook endpoint
-    verificationToken: process.env.VERIFICATION_TOKEN,
-    clientSigningSecret: process.env.CLIENT_SIGNING_SECRET,
-
-    // auth token for a single-team app
-    // botToken: process.env.BOT_TOKEN,
-
-    // credentials used to set up oauth for multi-team apps
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
+    clientSigningSecret: process.env.CLIENT_SIGNING_SECRET,
+    getBotUserByTeam: getBotUserByTeam,
+    getTokenForTeam: getTokenForTeam,
+    oauthVersion: "v2",
+    redirectUri: process.env.REDIRECT_URI,
     scopes: [
-        "pins:read", // Necessary to listen to pin events
-        "channels:history", // Necessary to listen to message events
+        "commands",
+        "pins:read",
+        "pins:write",
+        "channels:history",
         "users:read",
-        "users.profile:read",
         "channels:join",
         "channels:read",
         "chat:write",
@@ -56,55 +32,21 @@ const adapter = new SlackAdapter({
         "chat:write.customize",
         "groups:read",
     ],
-    redirectUri: process.env.REDIRECT_URI,
-
-    oauthVersion: "v2",
-    // functions required for retrieving team-specific info
-    // for use in multi-team apps
-    getTokenForTeam: getTokenForTeam,
-    getBotUserByTeam: getBotUserByTeam,
+    verificationToken: process.env.VERIFICATION_TOKEN,
 });
 
-// Use SlackEventMiddleware to emit events that match their original Slack event types.
 adapter.use(new SlackEventMiddleware());
-
-// Use SlackMessageType middleware to further classify messages as direct_message, direct_mention, or mention
 adapter.use(new SlackMessageTypeMiddleware());
 
 const controller = new Botkit({
     webhook_uri: "/api/messages",
-
     adapter: adapter,
-
-    storage,
 });
 
-if (process.env.CMS_URI) {
-    controller.usePlugin(
-        new BotkitCMSHelper({
-            uri: process.env.CMS_URI,
-            token: process.env.CMS_TOKEN,
-        })
-    );
-}
-
-// Once the bot has booted up its internal services, you can use them to do stuff.
 controller.ready(() => {
     // load traditional developer-created local custom feature modules
-    controller.loadModules(__dirname + "/features");
-
-    /* catch-all that uses the CMS to trigger dialogs */
-    if (controller.plugins.cms) {
-        controller.on("message,direct_message", async (bot, message) => {
-            let results = false;
-            results = await controller.plugins.cms.testTrigger(bot, message);
-
-            if (results !== false) {
-                // do not continue middleware!
-                return false;
-            }
-        });
-    }
+    controller.loadModules(`${__dirname}/events`);
+    controller.loadModules(`${__dirname}/commands`);
 });
 
 controller.webserver.get("/", (req, res) => {
@@ -112,7 +54,6 @@ controller.webserver.get("/", (req, res) => {
 });
 
 controller.webserver.get("/install", (req, res) => {
-    // getInstallLink points to slack's oauth endpoint and includes clientId and scopes
     res.redirect(controller.adapter.getInstallLink());
 });
 
@@ -151,9 +92,7 @@ if (process.env.USERS) {
     console.log("userCache:", userCache);
 }
 
-async function getTokenForTeam(teamId) {
-    console.log(`getting token for teamId ${teamId}`);
-
+async function getTokenForTeam(teamId): Promise<string> {
     if (tokenCache[teamId]) {
         return new Promise((resolve) => {
             setTimeout(function () {
@@ -163,10 +102,11 @@ async function getTokenForTeam(teamId) {
     } else {
         console.error("Team not found in tokenCache: ", teamId);
     }
+
+    return "";
 }
 
-async function getBotUserByTeam(teamId) {
-    console.log(`getting bot user id for teamId ${teamId}`);
+async function getBotUserByTeam(teamId): Promise<string> {
     if (userCache[teamId]) {
         return new Promise((resolve) => {
             setTimeout(function () {
@@ -176,4 +116,6 @@ async function getBotUserByTeam(teamId) {
     } else {
         console.error("Team not found in userCache: ", teamId);
     }
+
+    return "";
 }

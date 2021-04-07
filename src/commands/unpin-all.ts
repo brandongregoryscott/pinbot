@@ -1,0 +1,103 @@
+const UNPIN_ALL_KEY = "unpin_all";
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+module.exports = function (controller) {
+    controller.on("block_actions", async (bot, message) => {
+        const { actions } = message?.incoming_message?.channelData;
+        if (actions == null || actions.length === 0) {
+            return;
+        }
+
+        const confirmed = actions[0].value === "true";
+
+        if (confirmed) {
+            const pinResponse = await bot.api.pins.list({
+                channel: message.channel,
+            });
+
+            const pins = pinResponse.items.filter((pin) => pin.channel != null);
+
+            try {
+                await Promise.all(
+                    pins.map(async (pin) => {
+                        await sleep(1500);
+                        await bot.api.pins.remove({
+                            channel: pin.channel,
+                            timestamp: pin.message?.ts ?? pin.file?.ts,
+                        });
+                        await sleep(1500);
+                    })
+                );
+                await bot.replyInteractive(
+                    message,
+                    "Finished unpinning everything. Goodbye!"
+                );
+            } catch (error) {
+                await bot.replyInteractive(
+                    message,
+                    `Woops - something went wrong.\n \`\`\`${JSON.stringify(
+                        error,
+                        undefined,
+                        4
+                    )}\`\`\``
+                );
+            }
+
+            return;
+        }
+
+        await bot.replyInteractive(
+            message,
+            "Ok, I won't bother unpinning anything."
+        );
+        return;
+    });
+
+    controller.on("interactive_callback", async (bot, message) => {
+        console.log("interactive_callback", message);
+    });
+
+    controller.hears("unpin all", "direct_mention", async (bot, message) => {
+        await bot.reply(message, {
+            blocks: [
+                {
+                    type: "context",
+                    elements: [
+                        {
+                            type: "mrkdwn",
+                            text:
+                                "*Are you sure you want to unpin all items in this channel?*",
+                        },
+                    ],
+                },
+                {
+                    type: "actions",
+                    elements: [
+                        {
+                            type: "button",
+                            text: {
+                                type: "plain_text",
+                                text: "Yes, unpin all",
+                            },
+                            action_id: `${UNPIN_ALL_KEY}:confirm`,
+                            style: "primary",
+                            value: "true",
+                        },
+                        {
+                            type: "button",
+                            text: {
+                                type: "plain_text",
+                                text: "No, cancel",
+                            },
+                            action_id: `${UNPIN_ALL_KEY}:cancel`,
+                            style: "danger",
+                            value: "false",
+                        },
+                    ],
+                },
+            ],
+        });
+    });
+};
