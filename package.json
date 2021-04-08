@@ -31,7 +31,7 @@
     },
     "scripts": {
         "build": "tsc --pretty --project tsconfig.json",
-        "start": "node dist/bot.js --unhandled-rejections=warn",
+        "start": "node --unhandled-rejections=none dist/bot.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "tsc --pretty --project tsconfig.json --watch"
     },
