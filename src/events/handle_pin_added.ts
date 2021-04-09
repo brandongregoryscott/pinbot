@@ -1,13 +1,20 @@
-const handlePinAdded = async (bot, message) => {
+import { Botkit, BotkitHandler } from "botkit";
+import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import { CoreUtils } from "../utilities/core-utils";
+
+const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
     const { item } = message;
     const pin = item.message;
-    const userResponse = await bot.api.users.info({ user: pin.user });
+    console.log("handlePinAdded", pin);
+    const userResponse = (await bot.api.users.info({ user: pin.user })) as any;
     const profile = userResponse.user.profile;
 
     const conversationResponse = await bot.api.conversations.info({
         channel: item.channel,
     });
     const { channel } = conversationResponse;
+
+    // BSCOTT - If pin.files has values, attach them outside of the first 'blocks' attachment and append footer
 
     await bot.reply(message, {
         attachments: [
@@ -23,8 +30,8 @@ const handlePinAdded = async (bot, message) => {
     });
 };
 
-module.exports = function (controller) {
-    controller.on("pin_added", handlePinAdded);
+module.exports = function (controller: Botkit) {
+    controller.on("pin_added", handlePinAdded as BotkitHandler);
 };
 
 const footerBlock = (channel, pin) => ({
@@ -40,7 +47,7 @@ const footerBlock = (channel, pin) => ({
         },
         {
             type: "mrkdwn",
-            text: `_${new Date().setTime(Number(pin.ts))}_`,
+            text: `_${CoreUtils.toDate(pin.ts)}_`,
         },
     ],
 });
@@ -60,17 +67,33 @@ const headerBlock = (profile) => ({
     ],
 });
 
-const innerContent = (pin) =>
-    pin.blocks != null
-        ? pin.blocks
-        : [
-              {
-                  type: "context",
-                  elements: [
-                      {
-                          type: "mrkdwn",
-                          text: pin.text,
-                      },
-                  ],
-              },
-          ];
+const innerContent = (pin) => {
+    if (pin.blocks != null) {
+        return pin.blocks;
+    }
+
+    if (pin.files != null) {
+        const output = pin.files
+            .filter((file: any) => file.mimetype.includes("image"))
+            .map((file: any) => ({
+                type: "image",
+                image_url: file.permalink_public,
+                alt_text: file.title,
+            }));
+
+        console.log("output:", output);
+        return output;
+    }
+
+    return [
+        {
+            type: "context",
+            elements: [
+                {
+                    type: "mrkdwn",
+                    text: pin.text,
+                },
+            ],
+        },
+    ];
+};

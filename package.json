@@ -37,6 +37,7 @@
     },
     "version": "1.0.0",
     "devDependencies": {
+        "@slack/web-api": "6.1.0",
         "prettier": "2.2.1",
         "typescript": "4.2.3"
     }
