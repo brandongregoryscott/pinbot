@@ -14,19 +14,25 @@ const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
     });
     const { channel } = conversationResponse;
 
-    // BSCOTT - If pin.files has values, attach them outside of the first 'blocks' attachment and append footer
+    const headerAttachment = {
+        color: "#d4d4d4",
+        blocks: [headerBlock(profile)],
+    };
+    const footerAttachment = {
+        color: "#d4d4d4",
+        blocks: [footerBlock(channel, pin)],
+    };
+    const messageAttachments = innerContent(pin);
+    const attachments = [
+        headerAttachment,
+        ...messageAttachments,
+        footerAttachment,
+    ];
 
+    console.log("attachments:");
+    console.log(JSON.stringify(attachments, undefined, 4));
     await bot.reply(message, {
-        attachments: [
-            {
-                color: "#d4d4d4",
-                blocks: [
-                    headerBlock(profile),
-                    ...innerContent(pin),
-                    footerBlock(channel, pin),
-                ],
-            },
-        ],
+        attachments,
     });
 };
 
@@ -68,21 +74,44 @@ const headerBlock = (profile) => ({
 });
 
 const innerContent = (pin) => {
-    if (pin.blocks != null) {
-        return pin.blocks;
-    }
+    if (pin.attachments != null && pin.attachments.length > 0) {
+        const files = pin.attachments
+            .filter(
+                (attachment) =>
+                    attachment.files != null && attachment.files.length > 0
+            )
+            .map((attachment) => attachment.files)
+            .flat();
 
-    if (pin.files != null) {
-        const output = pin.files
+        console.log("Files");
+        console.log(JSON.stringify(files, undefined, 4));
+        const images = files
             .filter((file: any) => file.mimetype.includes("image"))
             .map((file: any) => ({
+                color: "#d4d4d4",
+                title: {
+                    type: "plain_text",
+                    text: file.title,
+                    emoji: true,
+                },
                 type: "image",
-                image_url: file.permalink_public,
+                image_url: file.permalink,
                 alt_text: file.title,
             }));
+        console.log("Images");
+        console.log(JSON.stringify(images, undefined, 4));
+        return images;
+    }
 
-        console.log("output:", output);
-        return output;
+    if (pin.blocks != null && pin.blocks.length > 0) {
+        console.log("Found blocks");
+        console.log(JSON.stringify(pin.blocks, undefined, 4));
+        return [
+            {
+                type: "context",
+                elements: pin.blocks,
+            },
+        ];
     }
 
     return [

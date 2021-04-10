@@ -5,10 +5,15 @@ import {
     SlackEventMiddleware,
 } from "botbuilder-adapter-slack";
 import dotenv from "dotenv";
+import { MongoDbStorage } from "botbuilder-storage-mongodb";
 
 // Load process.env values from .env file
 dotenv.config();
 
+const storage = new MongoDbStorage(
+    { url: process.env.MONGO_URI },
+    { useUnifiedTopology: true }
+);
 const adapter = new SlackAdapter({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
@@ -18,19 +23,19 @@ const adapter = new SlackAdapter({
     oauthVersion: "v2",
     redirectUri: process.env.REDIRECT_URI,
     scopes: [
-        "commands",
-        "pins:read",
-        "pins:write",
+        "app_mentions:read",
         "channels:history",
-        "users:read",
         "channels:join",
         "channels:read",
         "chat:write",
-        "incoming-webhook",
-        "app_mentions:read",
         "chat:write.public",
         "chat:write.customize",
+        "commands",
         "groups:read",
+        "incoming-webhook",
+        "pins:read",
+        "pins:write",
+        "users:read",
     ],
 });
 
@@ -39,7 +44,8 @@ adapter.use(new SlackMessageTypeMiddleware());
 
 const controller = new Botkit({
     webhook_uri: "/api/messages",
-    adapter: adapter,
+    adapter,
+    storage,
 });
 
 controller.ready(() => {
@@ -47,8 +53,6 @@ controller.ready(() => {
     controller.loadModules(`${__dirname}/events`);
     controller.loadModules(`${__dirname}/commands`);
 });
-
-console.log("controller.getConfig()", controller.getConfig());
 
 controller.webserver.get("/", (req, res) => {
     res.send(`This app is running Botkit ${controller.version}.`);
