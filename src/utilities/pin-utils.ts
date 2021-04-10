@@ -1,26 +1,15 @@
-import { PinType } from "../../enums/pin-type";
-import { File } from "./file";
-import { Message } from "./message";
-
 // -----------------------------------------------------------------------------------------
-// #region Interfaces
+// #region Public Functions
 // -----------------------------------------------------------------------------------------
 
-interface Pin {
-    channel?: string;
-    created: number;
-    createdBy: string;
-    file?: File;
-    message?: Message;
-    type: PinType;
-}
+const PinUtils = {};
 
-// #endregion Interfaces
+// #endregion Public Functions
 
 // -----------------------------------------------------------------------------------------
 // #region Exports
 // -----------------------------------------------------------------------------------------
 
-export { Pin };
+export { PinUtils };
 
 // #endregion Exports

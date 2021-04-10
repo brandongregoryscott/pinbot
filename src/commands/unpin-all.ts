@@ -23,9 +23,6 @@ const handleBlockActions: SlackBotkitHandler = async (
             channel: message.channel,
         })) as PinsListResponse;
 
-        console.log("---------------pinResponse-----------------");
-        console.log(pinResponse);
-
         const pins = pinResponse.items.filter(
             (pin: Pin) => pin.channel != null
         );
@@ -34,19 +31,6 @@ const handleBlockActions: SlackBotkitHandler = async (
             pins.forEach(async (pin: Pin) => {
                 await CoreUtils.sleep(1500);
 
-                if (pin.message != null) {
-                    console.log(
-                        "------------------pin.message------------------------"
-                    );
-                    console.log(JSON.stringify(pin.message, undefined, 4));
-                }
-
-                if (pin.file != null) {
-                    console.log(
-                        "------------------pin.file------------------------"
-                    );
-                    console.log(JSON.stringify(pin.file, undefined, 4));
-                }
                 await bot.api.pins.remove({
                     channel: pin.channel!,
                     timestamp: pin.message?.ts ?? pin.file?.ts,

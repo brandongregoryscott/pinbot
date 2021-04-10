@@ -1,19 +1,29 @@
-import { Botkit } from "botkit";
+import { SlackBotWorker } from "botbuilder-adapter-slack";
+import { Botkit, BotkitMessage } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import { Channel } from "../interfaces/slack/channel";
+import { File } from "../interfaces/slack/file";
+import { Message } from "../interfaces/slack/message";
+import { Pin } from "../interfaces/slack/pin";
+import { Profile } from "../interfaces/slack/profile";
 import { ControllerUtils } from "../utilities/controller-utils";
 import { CoreUtils } from "../utilities/core-utils";
 
-const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
-    const { item } = message;
-    const pin = item.message;
+const handlePinAdded: SlackBotkitHandler = async (
+    bot: SlackBotWorker,
+    message: BotkitMessage
+) => {
+    const item = message.item as Pin;
+    const pin: Message = item.message!;
     const userResponse = (await bot.api.users.info({ user: pin.user })) as any;
-    const profile = userResponse.user.profile;
-
+    const profile = userResponse.user.profile as Profile;
+    console.log("profile:", profile);
     const conversationResponse = await bot.api.conversations.info({
-        channel: item.channel,
+        channel: item.channel!,
     });
-    const { channel } = conversationResponse;
+    const channel = conversationResponse.channel as Channel;
 
+    console.log("channel:", channel);
     const headerAttachment = {
         color: "#d4d4d4",
         blocks: [headerBlock(profile)],
@@ -34,7 +44,7 @@ const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
     });
 };
 
-const footerBlock = (channel, pin) => ({
+const footerBlock = (channel: Channel, pin: Message) => ({
     type: "context",
     elements: [
         {
@@ -52,7 +62,7 @@ const footerBlock = (channel, pin) => ({
     ],
 });
 
-const headerBlock = (profile) => ({
+const headerBlock = (profile: Profile) => ({
     type: "context",
     elements: [
         {
@@ -67,7 +77,7 @@ const headerBlock = (profile) => ({
     ],
 });
 
-const innerContent = (pin) => {
+const innerContent = (pin: Message) => {
     if (pin.attachments != null && pin.attachments.length > 0) {
         const files = pin.attachments
             .filter(
@@ -78,8 +88,8 @@ const innerContent = (pin) => {
             .flat();
 
         const images = files
-            .filter((file: any) => file.mimetype.includes("image"))
-            .map((file: any) => ({
+            .filter((file: File) => file.mimetype.includes("image"))
+            .map((file: File) => ({
                 color: "#d4d4d4",
                 title: {
                     type: "plain_text",
@@ -94,8 +104,6 @@ const innerContent = (pin) => {
     }
 
     if (pin.blocks != null && pin.blocks.length > 0) {
-        console.log("Found blocks");
-        console.log(JSON.stringify(pin.blocks, undefined, 4));
         return [
             {
                 type: "context",
