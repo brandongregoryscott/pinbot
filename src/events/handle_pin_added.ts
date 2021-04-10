@@ -1,11 +1,11 @@
-import { Botkit, BotkitHandler } from "botkit";
+import { Botkit } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import { ControllerUtils } from "../utilities/controller-utils";
 import { CoreUtils } from "../utilities/core-utils";
 
 const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
     const { item } = message;
     const pin = item.message;
-    console.log("handlePinAdded", pin);
     const userResponse = (await bot.api.users.info({ user: pin.user })) as any;
     const profile = userResponse.user.profile;
 
@@ -29,15 +29,9 @@ const handlePinAdded: SlackBotkitHandler = async (bot, message) => {
         footerAttachment,
     ];
 
-    console.log("attachments:");
-    console.log(JSON.stringify(attachments, undefined, 4));
     await bot.reply(message, {
         attachments,
     });
-};
-
-module.exports = function (controller: Botkit) {
-    controller.on("pin_added", handlePinAdded as BotkitHandler);
 };
 
 const footerBlock = (channel, pin) => ({
@@ -83,8 +77,6 @@ const innerContent = (pin) => {
             .map((attachment) => attachment.files)
             .flat();
 
-        console.log("Files");
-        console.log(JSON.stringify(files, undefined, 4));
         const images = files
             .filter((file: any) => file.mimetype.includes("image"))
             .map((file: any) => ({
@@ -98,8 +90,6 @@ const innerContent = (pin) => {
                 image_url: file.permalink,
                 alt_text: file.title,
             }));
-        console.log("Images");
-        console.log(JSON.stringify(images, undefined, 4));
         return images;
     }
 
@@ -126,3 +116,6 @@ const innerContent = (pin) => {
         },
     ];
 };
+
+export default (controller: Botkit) =>
+    ControllerUtils.on(controller, "pin_added", handlePinAdded);

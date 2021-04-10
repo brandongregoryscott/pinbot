@@ -1,19 +1,26 @@
-import { PinType } from "../../enums/pin-type";
-import { Attachment } from "./attachment";
+import { File } from "./file";
 
 // -----------------------------------------------------------------------------------------
 // #region Interfaces
 // -----------------------------------------------------------------------------------------
 
-interface Message {
-    attachments?: Attachment[];
-    user: string;
-    team: string;
-    text: string;
+interface Attachment {
+    fallback: string;
     ts: string;
-    permalink: string;
-    pinned_to?: string[];
-    type: PinType;
+    author_id: string;
+    author_subname: string;
+    channel_id: string;
+    channel_name: string;
+    is_msg_unfurl: true;
+    author_name: string;
+    author_link: string;
+    author_icon: string;
+    mrkdwn_in: string[];
+    files: File[];
+    color: string;
+    from_url: string;
+    is_share: boolean;
+    footer: string;
 }
 
 // #endregion Interfaces
@@ -22,6 +29,6 @@ interface Message {
 // #region Exports
 // -----------------------------------------------------------------------------------------
 
-export { Message };
+export { Attachment };
 
 // #endregion Exports
