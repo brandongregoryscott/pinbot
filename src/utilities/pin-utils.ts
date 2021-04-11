@@ -47,14 +47,10 @@ const flattenImageFiles = (pin: Message): File[] => {
         pin?.attachments?.flatMap(
             (attachment: Attachment) => attachment.files
         ) ?? [];
-    // if (pin.attachments != null && pin.attachments.length > 0) {
-    //     const files = pin.attachments
-    //         .filter(
-    //             (attachment) =>
-    //                 attachment.files != null && attachment.files.length > 0
-    //         )
-    //         .map((attachment) => attachment.files)
-    //         .flat();
+
+    return [...(pin.files ?? []), ...attachmentFiles].filter((file: File) =>
+        file.mimetype.includes("image")
+    );
 };
 
 const _toFooterBlock = (channel: Channel, pin: Message) => ({
@@ -91,40 +87,21 @@ const _toHeaderBlock = (profile: Profile) => ({
 });
 
 const _toMessageAttachments = (pin: Message) => {
-    if (pin.attachments != null && pin.attachments.length > 0) {
-        const files = pin.attachments
-            .filter(
-                (attachment) =>
-                    attachment.files != null && attachment.files.length > 0
-            )
-            .map((attachment) => attachment.files)
-            .flat();
-
-        const images = files
-            .filter((file: File) => file.mimetype.includes("image"))
-            .map((file: File) => ({
-                // color: ATTACHMENT_COLOR,
-                title: {
-                    type: "plain_text",
-                    text: file.title,
-                    emoji: true,
-                },
-                type: "image",
-                image_url: file.permalink,
-                alt_text: file.title,
-            }));
+    const imageFiles = flattenImageFiles(pin);
+    if (imageFiles.length > 0) {
+        const images = imageFiles.map((file: File) => ({
+            // color: ATTACHMENT_COLOR,
+            title: {
+                type: "plain_text",
+                text: file.title,
+                emoji: true,
+            },
+            type: "image",
+            image_url: file.permalink,
+            alt_text: file.title,
+        }));
         return images;
     }
-
-    // if (pin.blocks != null && pin.blocks.length > 0) {
-    //     return pin.blocks;
-    // return [
-    //     {
-    //         type: "context",
-    //         elements: pin.blocks,
-    //     },
-    // ];
-    // }
 
     return [
         {
