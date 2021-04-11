@@ -21,7 +21,7 @@ const ControllerUtils = {
                     log(message);
                 }
 
-                handler(bot as SlackBotWorker, message);
+                await handler(bot as SlackBotWorker, message);
             }
         );
     },
@@ -33,16 +33,17 @@ const ControllerUtils = {
 // #region Private Functions
 // -----------------------------------------------------------------------------------------
 
-const header = () => console.log("-".repeat(80));
+const divider = () => console.log("-".repeat(80));
 
 const log = (message: BotkitMessage) => {
     const { type, user, channel_id, item } = message;
-    header();
+
+    divider();
     console.log(`Type: ${type}`);
     console.log(`User: ${user}`);
     console.log(`channel_id: ${channel_id}`);
     console.log(JSON.stringify(item, undefined, 4));
-    header();
+    divider();
 };
 
 // #endregion Private Functions
