@@ -3,11 +3,9 @@
 // -----------------------------------------------------------------------------------------
 
 const CoreUtils = {
-    toDate(timestamp: string): Date {
-        const date = new Date();
-        date.setTime(Number(timestamp));
-
-        return date;
+    formatTimestamp(timestamp: string): string {
+        const date = new Date(Number(timestamp) * 1000); // JavaScript expects timestamps in milliseconds
+        return date.toDateString();
     },
     async sleep(milliseconds: number): Promise<void> {
         return new Promise<void>((resolve) =>

@@ -33,7 +33,8 @@ const handleBlockActions: SlackBotkitHandler = async (
 
                 await bot.api.pins.remove({
                     channel: pin.channel!,
-                    timestamp: pin.message?.ts ?? pin.file?.ts,
+                    timestamp:
+                        pin.message?.ts ?? pin.file?.timestamp.toString(),
                 });
             });
             await bot.replyInteractive(

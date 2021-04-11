@@ -38,7 +38,9 @@ const header = () => console.log("-".repeat(80));
 const log = (message: BotkitMessage) => {
     const { type, user, channel_id, item } = message;
     header();
-    console.log(`Type: ${type}\tUser: ${user}\tchannel_id: ${channel_id}`);
+    console.log(`Type: ${type}`);
+    console.log(`User: ${user}`);
+    console.log(`channel_id: ${channel_id}`);
     console.log(JSON.stringify(item, undefined, 4));
     header();
 };
@@ -49,6 +51,6 @@ const log = (message: BotkitMessage) => {
 // #region Exports
 // -----------------------------------------------------------------------------------------
 
-export { ControllerUtils };
+export { ControllerUtils as BotkitUtils };
 
 // #endregion Exports
