@@ -15,7 +15,11 @@ const BotkitUtils = {
         return controller.on(
             events,
             async (bot: BotWorker, message: BotkitMessage) => {
-                await handler(bot as SlackBotWorker, message);
+                try {
+                    await handler(bot as SlackBotWorker, message);
+                } catch (error) {
+                    await bot.reply(message, `Something went wrong - ${error}`);
+                }
             }
         );
     },

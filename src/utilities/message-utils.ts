@@ -18,15 +18,16 @@ const ATTACHMENT_COLOR = "#d4d4d4";
 // -----------------------------------------------------------------------------------------
 
 const MessageUtils = {
-    flattenImageFiles(pin: Message): File[] {
+    flattenImageFiles(message: Message): File[] {
         const attachmentFiles =
-            pin?.attachments?.flatMap(
+            message?.attachments?.flatMap(
                 (attachment: Attachment) => attachment.files
             ) ?? [];
 
-        return [...(pin.files ?? []), ...attachmentFiles].filter((file: File) =>
-            file.mimetype.includes("image")
-        );
+        return [
+            ...(message.files ?? []),
+            ...attachmentFiles,
+        ].filter((file: File) => file.mimetype.includes("image"));
     },
     toReply(message: Message, channel: Channel, profile: Profile): any {
         return {
