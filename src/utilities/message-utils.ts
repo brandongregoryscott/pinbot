@@ -2,7 +2,6 @@ import { Attachment } from "../interfaces/slack/attachment";
 import { Channel } from "../interfaces/slack/channel";
 import { File } from "../interfaces/slack/file";
 import { Message } from "../interfaces/slack/message";
-import { Pin } from "../interfaces/slack/pin";
 import { Profile } from "../interfaces/slack/profile";
 import { CoreUtils } from "./core-utils";
 
@@ -18,18 +17,27 @@ const ATTACHMENT_COLOR = "#d4d4d4";
 // #region Public Functions
 // -----------------------------------------------------------------------------------------
 
-const PinUtils = {
-    toMessage(pin: Message, channel: Channel, profile: Profile) {
+const MessageUtils = {
+    flattenImageFiles(pin: Message): File[] {
+        const attachmentFiles =
+            pin?.attachments?.flatMap(
+                (attachment: Attachment) => attachment.files
+            ) ?? [];
+
+        return [...(pin.files ?? []), ...attachmentFiles].filter((file: File) =>
+            file.mimetype.includes("image")
+        );
+    },
+    toReply(message: Message, channel: Channel, profile: Profile): any {
         return {
             attachments: [
                 {
-                    // color: ATTACHMENT_COLOR,
-                    blocks: [_toHeaderBlock(profile)],
-                },
-                ..._toMessageAttachments(pin),
-                {
-                    // color: ATTACHMENT_COLOR,
-                    blocks: [_toFooterBlock(channel, pin)],
+                    color: ATTACHMENT_COLOR,
+                    blocks: [
+                        _toHeaderBlock(profile),
+                        ..._toMessageAttachments(message),
+                        _toFooterBlock(channel, message),
+                    ],
                 },
             ],
         };
@@ -41,17 +49,6 @@ const PinUtils = {
 // -----------------------------------------------------------------------------------------
 // #region Private Functions
 // -----------------------------------------------------------------------------------------
-
-const flattenImageFiles = (pin: Message): File[] => {
-    const attachmentFiles =
-        pin?.attachments?.flatMap(
-            (attachment: Attachment) => attachment.files
-        ) ?? [];
-
-    return [...(pin.files ?? []), ...attachmentFiles].filter((file: File) =>
-        file.mimetype.includes("image")
-    );
-};
 
 const _toFooterBlock = (channel: Channel, pin: Message) => ({
     type: "context",
@@ -86,35 +83,31 @@ const _toHeaderBlock = (profile: Profile) => ({
     ],
 });
 
-const _toMessageAttachments = (pin: Message) => {
-    const imageFiles = flattenImageFiles(pin);
+const _toMessageAttachments = (pin: Message): any[] => {
+    const imageFiles = MessageUtils.flattenImageFiles(pin);
     if (imageFiles.length > 0) {
-        const images = imageFiles.map((file: File) => ({
-            // color: ATTACHMENT_COLOR,
-            title: {
-                type: "plain_text",
-                text: file.title,
-                emoji: true,
-            },
-            type: "image",
-            image_url: file.permalink,
-            alt_text: file.title,
-        }));
+        const images = imageFiles.map((file: File) => {
+            return {
+                title: {
+                    type: "plain_text",
+                    text: file.title,
+                    emoji: true,
+                },
+                type: "image",
+                image_url: "https://via.placeholder.com/150",
+                alt_text: file.title,
+            };
+        });
         return images;
     }
 
     return [
         {
-            // color: ATTACHMENT_COLOR,
-            blocks: [
+            type: "context",
+            elements: [
                 {
-                    type: "context",
-                    elements: [
-                        {
-                            type: "mrkdwn",
-                            text: pin.text,
-                        },
-                    ],
+                    type: "mrkdwn",
+                    text: pin.text,
                 },
             ],
         },
@@ -127,6 +120,6 @@ const _toMessageAttachments = (pin: Message) => {
 // #region Exports
 // -----------------------------------------------------------------------------------------
 
-export { PinUtils };
+export { MessageUtils };
 
 // #endregion Exports

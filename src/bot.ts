@@ -6,14 +6,15 @@ import {
 } from "botbuilder-adapter-slack";
 import dotenv from "dotenv";
 import { MongoDbStorage } from "botbuilder-storage-mongodb";
+import { LoggerMiddleware } from "./middlewares/logger-middleware";
 
 // Load process.env values from .env file
 dotenv.config();
 
-const storage = new MongoDbStorage(
-    { url: process.env.MONGO_URI },
-    { useUnifiedTopology: true }
-);
+const storage = new MongoDbStorage({
+    url: process.env.MONGO_URI,
+});
+
 const adapter = new SlackAdapter({
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
@@ -41,6 +42,7 @@ const adapter = new SlackAdapter({
 
 adapter.use(new SlackEventMiddleware());
 adapter.use(new SlackMessageTypeMiddleware());
+adapter.use(new LoggerMiddleware());
 
 const controller = new Botkit({
     webhook_uri: "/api/messages",
