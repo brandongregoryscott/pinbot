@@ -27,16 +27,17 @@ const handleBlockActions: SlackBotkitHandler = async (
             (pin: Pin) => pin.channel != null
         );
 
-        try {
-            pins.forEach(async (pin: Pin) => {
-                await CoreUtils.sleep(1500);
+        const removePinPromises = pins.map(async (pin: Pin) => {
+            await CoreUtils.sleep(2500);
 
-                await bot.api.pins.remove({
-                    channel: pin.channel!,
-                    timestamp:
-                        pin.message?.ts ?? pin.file?.timestamp.toString(),
-                });
+            await bot.api.pins.remove({
+                channel: pin.channel!,
+                timestamp: pin.message?.ts ?? pin.file?.timestamp.toString(),
             });
+        });
+
+        try {
+            await Promise.all(removePinPromises);
             await bot.replyInteractive(
                 message,
                 "Finished unpinning everything. Goodbye!"
