@@ -9,6 +9,8 @@ import { Profile } from "../interfaces/slack/profile";
 import { ChannelType } from "../enums/channel-type";
 import { ChannelUtils } from "../utilities/channel-utils";
 import { BotkitUtils } from "../utilities/botkit-utils";
+import { Pin } from "../interfaces/slack/pin";
+import { PinType } from "../enums/pin-type";
 
 const handleRandomPin: SlackBotkitHandler = async (
     bot: SlackBotWorker,
@@ -28,7 +30,11 @@ const handleRandomPin: SlackBotkitHandler = async (
         channel: randomChannel.id,
     })) as PinsListResponse;
 
-    const randomPin = CoreUtils.randomItem(pins);
+    const randomPin = CoreUtils.randomItem(
+        pins,
+        (pin: Pin) => pin.type === PinType.Message
+    );
+
     const { user } = (await bot.api.users.info({
         user: message.user,
     })) as any;

@@ -8,7 +8,12 @@ const CoreUtils = {
     randomInt(max: number): number {
         return Math.floor(Math.random() * max);
     },
-    randomItem<T>(items: T[]): T {
+    randomItem<T>(items: T[], filter?: (item: T) => boolean): T {
+        if (filter == null || items.filter(filter).length === 0) {
+            return items[this.randomInt(items.length)];
+        }
+
+        items = items.filter(filter);
         return items[this.randomInt(items.length)];
     },
     throttle<TArgs extends readonly unknown[], TReturnValue>(

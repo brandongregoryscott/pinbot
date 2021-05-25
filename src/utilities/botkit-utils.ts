@@ -28,10 +28,12 @@ const BotkitUtils = {
             try {
                 await handler(bot as SlackBotWorker, message);
             } catch (error) {
+                console.log(error);
+                const errorAsJson = JSON.stringify(error, undefined, 4);
+                const formattedError =
+                    errorAsJson !== "{}" ? errorAsJson : error.toString();
                 await bot.say(
-                    `Error: ${StringUtils.formatCodeBlock(
-                        JSON.stringify(error, undefined, 4)
-                    )}`
+                    `Error: ${StringUtils.formatCodeBlock(formattedError)}`
                 );
             }
         };
