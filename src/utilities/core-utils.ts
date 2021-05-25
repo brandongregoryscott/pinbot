@@ -8,6 +8,9 @@ const CoreUtils = {
     randomInt(max: number): number {
         return Math.floor(Math.random() * max);
     },
+    randomItem<T>(items: T[]): T {
+        return items[this.randomInt(items.length)];
+    },
     throttle<TArgs extends readonly unknown[], TReturnValue>(
         fn: (...args: TArgs) => TReturnValue
     ) {

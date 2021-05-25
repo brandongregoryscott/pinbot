@@ -5,6 +5,7 @@ import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Channel } from "../interfaces/slack/channel";
 import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
 import { BotkitUtils } from "../utilities/botkit-utils";
+import { ChannelUtils } from "../utilities/channel-utils";
 import { CoreUtils } from "../utilities/core-utils";
 import { StringUtils } from "../utilities/string-utils";
 
@@ -17,7 +18,7 @@ const handleJoinAll: SlackBotkitHandler = async (
         types: ChannelType.Public,
     })) as ChannelsListResponse;
 
-    const publicChannelsToJoin = publicChannels.filter(filterByNonMember);
+    const publicChannelsToJoin = ChannelUtils.filterByNonMember(publicChannels);
     if (publicChannelsToJoin.length < 1) {
         return await bot.say("No public channels to join.");
     }
@@ -40,8 +41,6 @@ const handleJoinAll: SlackBotkitHandler = async (
         `Finished joining ${publicChannelsToJoin.length} channels: ${joinChannelNames}`
     );
 };
-
-const filterByNonMember = (channel: Channel) => !channel.is_member;
 
 const joinChannelNames = (channels: Channel[]): string =>
     StringUtils.formatCodeBlock(channels.map((e) => e.name).join(", "));

@@ -1,6 +1,7 @@
 import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { Botkit, BotkitMessage, BotWorker } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import { StringUtils } from "./string-utils";
 
 // -----------------------------------------------------------------------------------------
 // #region Public Functions
@@ -28,7 +29,9 @@ const BotkitUtils = {
                 await handler(bot as SlackBotWorker, message);
             } catch (error) {
                 await bot.say(
-                    `Error: \`\`\`${JSON.stringify(error, undefined, 4)}\`\`\``
+                    `Error: ${StringUtils.formatCodeBlock(
+                        JSON.stringify(error, undefined, 4)
+                    )}`
                 );
             }
         };
