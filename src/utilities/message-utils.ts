@@ -29,7 +29,7 @@ const MessageUtils = {
             ...attachmentFiles,
         ].filter((file: File) => file.mimetype.includes("image"));
     },
-    toReply(message: Message, channel: Channel, profile: Profile): any {
+    toPinReply(message: Message, channel: Channel, profile: Profile): any {
         return {
             attachments: [
                 {

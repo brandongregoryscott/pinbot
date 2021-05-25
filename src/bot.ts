@@ -33,6 +33,7 @@ const adapter = new SlackAdapter({
         "chat:write.customize",
         "commands",
         "groups:read",
+        "groups:history",
         "incoming-webhook",
         "pins:read",
         "pins:write",

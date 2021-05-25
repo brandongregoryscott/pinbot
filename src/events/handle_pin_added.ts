@@ -24,7 +24,7 @@ const handlePinAdded: SlackBotkitHandler = async (
     });
     const channel = conversationResponse.channel as Channel;
 
-    const response = MessageUtils.toReply(incomingMessage, channel, profile);
+    const response = MessageUtils.toPinReply(incomingMessage, channel, profile);
     await bot.reply(message, response);
 };
 

@@ -8,7 +8,8 @@
         "botbuilder-storage-mongodb": "0.9.5",
         "botkit": "4.10.0",
         "botkit-plugin-cms": "1.0.3",
-        "dotenv": "7.0.0"
+        "dotenv": "7.0.0",
+        "p-throttle": "4.1.1"
     },
     "description": "A slack bot designed to share messages that are pinned, which was removed in a ~November 2016 Slack client update.",
     "engines": {
