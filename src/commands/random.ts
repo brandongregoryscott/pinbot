@@ -32,7 +32,10 @@ const handleRandomPin: SlackBotkitHandler = async (
 
     const randomPin = CoreUtils.randomItem(
         pins,
-        (pin: Pin) => pin.type === PinType.Message && hasNoImages(pin)
+        (pin: Pin) =>
+            pin.type === PinType.Message &&
+            pin.message != null &&
+            MessageUtils.flattenImageFiles(pin.message).length < 1
     );
 
     const { user } = (await bot.api.users.info({
