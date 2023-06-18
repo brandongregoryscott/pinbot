@@ -1,14 +1,16 @@
 # Pinbot
 
-<a href="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yaml">
-    <img alt="build status" src="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yaml/badge.svg"/>
+<a href="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yml">
+    <img alt="build status" src="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yml/badge.svg"/>
 </a>
 
-This is a Slack bot that re-shares messages when they are pinned, which was a feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
+Pinbot is a Slack bot that re-shares messages when they are pinned, which was a feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
 
 ## Tech
 
 -   [Botkit](https://github.com/howdyai/botkit)
+-   [Botbuilder Adapter Slack](https://github.com/howdyai/botkit/tree/main/packages/botbuilder-adapter-slack)
+-   [Slack Block Builder](https://github.com/raycharius/slack-block-builder)
 
 # Running Locally
 

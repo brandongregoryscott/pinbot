@@ -2,8 +2,8 @@ import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { PinsListResponse } from "../interfaces/slack/pins-list-response";
 import { Botkit, BotkitHandler, BotkitMessage, BotWorker } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
-import { CoreUtils } from "../utilities/core-utils";
 import { Pin } from "../interfaces/slack/pin";
+import { throttle } from "../utilities/core-utils";
 
 const UNPIN_ALL_KEY = "unpin_all";
 
@@ -28,7 +28,7 @@ const handleBlockActions: SlackBotkitHandler = async (
         );
 
         const removePinPromises = pins.map(
-            CoreUtils.throttle(async (pin: Pin) =>
+            throttle(async (pin: Pin) =>
                 bot.api.pins.remove({
                     channel: pin.channel!,
                     timestamp:

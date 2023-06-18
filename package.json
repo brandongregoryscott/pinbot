@@ -1,5 +1,15 @@
 {
-    "author": "Brandon Scott (https://github.com/brandongregoryscott), Joshua Peters (https://github.com/joshuapeters)",
+    "author": {
+        "name": "Brandon Scott",
+        "email": "contact@brandonscott.me",
+        "url": "https://wwww.brandonscott.me"
+    },
+    "contributors": [
+        {
+            "name": "Joshua Peters",
+            "url": "https://github.com/joshuapeters"
+        }
+    ],
     "bugs": {
         "url": "https://github.com/brandongregoryscott/pinbot/issues"
     },
@@ -9,11 +19,12 @@
         "botkit": "4.10.0",
         "botkit-plugin-cms": "1.0.3",
         "dotenv": "7.0.0",
-        "p-throttle": "4.1.1"
+        "p-throttle": "4.1.1",
+        "slack-block-builder": "^2.7.2"
     },
     "description": "A slack bot designed to share messages that are pinned, which was removed in a ~November 2016 Slack client update.",
     "engines": {
-        "node": ">=14"
+        "node": ">=20"
     },
     "homepage": "https://github.com/brandongregoryscott/pinbot#readme",
     "keywords": [

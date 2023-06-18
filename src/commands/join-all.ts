@@ -5,9 +5,9 @@ import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Channel } from "../interfaces/slack/channel";
 import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
 import { BotkitUtils } from "../utilities/botkit-utils";
-import { ChannelUtils } from "../utilities/channel-utils";
-import { CoreUtils } from "../utilities/core-utils";
+import { filterByNonMember } from "../utilities/channel-utils";
 import { StringUtils } from "../utilities/string-utils";
+import { throttle } from "../utilities/core-utils";
 
 const handleJoinAll: SlackBotkitHandler = async (
     bot: SlackBotWorker,
@@ -18,7 +18,7 @@ const handleJoinAll: SlackBotkitHandler = async (
         types: ChannelType.Public,
     })) as ChannelsListResponse;
 
-    const publicChannelsToJoin = ChannelUtils.filterByNonMember(publicChannels);
+    const publicChannelsToJoin = filterByNonMember(publicChannels);
     if (publicChannelsToJoin.length < 1) {
         return await bot.say("No public channels to join.");
     }
@@ -27,7 +27,7 @@ const handleJoinAll: SlackBotkitHandler = async (
         `Attempting to join ${publicChannelsToJoin.length} channels...`
     );
 
-    const joinChannel = CoreUtils.throttle(async (channel: Channel) => {
+    const joinChannel = throttle(async (channel: Channel) => {
         console.log(`Attempting to join ${channel.name}`);
         await bot.api.conversations.join({
             channel: channel.id,
