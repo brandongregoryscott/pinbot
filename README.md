@@ -13,6 +13,16 @@ Edit the samples, and add your own in the [features/](features/) folder.
 
 To run `pinbot` locally, you'll need to make sure you have Ngrok installed (`brew install ngrok`), and you'll likely want to set up a "Development" app so the production app can continue running with separate credentials.
 
+First, set up your `.env` file:
+
+```sh
+cp .env.sample .env
+```
+
+Visit the App Credentials page https://api.slack.com/apps/{appId}/general and fill in the required values:
+
+![App Credentials](./AppCredentials.png)
+
 ```sh
 # Terminal #1
 npm run watch
