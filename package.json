@@ -33,15 +33,17 @@
     "scripts": {
         "build": "npm run clean && tsc --pretty --project tsconfig.json",
         "clean": "rimraf dist",
-        "start": "node --unhandled-rejections=none dist/bot.js",
+        "dev": "nodemon --unhandled-rejections=none dist/bot.js",
+        "start": "node dist/bot.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "npm run clean && tsc --pretty --project tsconfig.json --watch"
     },
     "version": "1.0.0",
     "devDependencies": {
         "@slack/web-api": "6.1.0",
+        "nodemon": "2.0.22",
         "prettier": "2.2.1",
         "rimraf": "3.0.2",
-        "typescript": "4.2.3"
+        "typescript": "5.1.3"
     }
 }

@@ -5,17 +5,7 @@ import { Message } from "../interfaces/slack/message";
 import { Profile } from "../interfaces/slack/profile";
 import { CoreUtils } from "./core-utils";
 
-// -----------------------------------------------------------------------------------------
-// #region Constants
-// -----------------------------------------------------------------------------------------
-
 const ATTACHMENT_COLOR = "#d4d4d4";
-
-// #endregion Constants
-
-// -----------------------------------------------------------------------------------------
-// #region Public Functions
-// -----------------------------------------------------------------------------------------
 
 const MessageUtils = {
     flattenImageFiles(message?: Message): File[] {
@@ -43,12 +33,6 @@ const MessageUtils = {
         };
     },
 };
-
-// #endregion Public Functions
-
-// -----------------------------------------------------------------------------------------
-// #region Private Functions
-// -----------------------------------------------------------------------------------------
 
 const _toFooterBlock = (channel: Channel, pin: Message) => ({
     type: "context",
@@ -114,12 +98,4 @@ const _toMessageAttachments = (pin: Message): any[] => {
     ];
 };
 
-// #endregion Private Functions
-
-// -----------------------------------------------------------------------------------------
-// #region Exports
-// -----------------------------------------------------------------------------------------
-
 export { MessageUtils };
-
-// #endregion Exports

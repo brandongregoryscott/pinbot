@@ -1,20 +1,8 @@
 import { SlackBotWorker } from "botbuilder-adapter-slack";
-import { BotkitHandler, BotkitMessage } from "botkit";
-
-// -----------------------------------------------------------------------------------------
-// #region Interfaces
-// -----------------------------------------------------------------------------------------
+import { BotkitMessage } from "botkit";
 
 interface SlackBotkitHandler {
     (bot: SlackBotWorker, message: BotkitMessage): Promise<any>;
 }
 
-// #endregion Interfaces
-
-// -----------------------------------------------------------------------------------------
-// #region Exports
-// -----------------------------------------------------------------------------------------
-
 export { SlackBotkitHandler };
-
-// #endregion Exports

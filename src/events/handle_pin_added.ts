@@ -2,7 +2,6 @@ import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { Botkit, BotkitMessage } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Channel } from "../interfaces/slack/channel";
-import { File } from "../interfaces/slack/file";
 import { Message } from "../interfaces/slack/message";
 import { Pin } from "../interfaces/slack/pin";
 import { Profile } from "../interfaces/slack/profile";

@@ -1,9 +1,5 @@
 import pThrottle from "p-throttle";
 
-// -----------------------------------------------------------------------------------------
-// #region Public Functions
-// -----------------------------------------------------------------------------------------
-
 const CoreUtils = {
     randomInt(max: number): number {
         return Math.floor(Math.random() * max);
@@ -30,12 +26,4 @@ const CoreUtils = {
     },
 };
 
-// #endregion Public Functions
-
-// -----------------------------------------------------------------------------------------
-// #region Exports
-// -----------------------------------------------------------------------------------------
-
 export { CoreUtils };
-
-// #endregion Exports

@@ -2,10 +2,6 @@ import { PinType } from "../../enums/pin-type";
 import { Attachment } from "./attachment";
 import { File } from "./file";
 
-// -----------------------------------------------------------------------------------------
-// #region Interfaces
-// -----------------------------------------------------------------------------------------
-
 interface Message {
     attachments?: Attachment[];
     blocks?: any[];
@@ -20,12 +16,4 @@ interface Message {
     type: PinType;
 }
 
-// #endregion Interfaces
-
-// -----------------------------------------------------------------------------------------
-// #region Exports
-// -----------------------------------------------------------------------------------------
-
 export { Message };
-
-// #endregion Exports

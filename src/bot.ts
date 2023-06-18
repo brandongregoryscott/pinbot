@@ -5,15 +5,10 @@ import {
     SlackEventMiddleware,
 } from "botbuilder-adapter-slack";
 import dotenv from "dotenv";
-import { MongoDbStorage } from "botbuilder-storage-mongodb";
 import { LoggerMiddleware } from "./middlewares/logger-middleware";
 
 // Load process.env values from .env file
 dotenv.config();
-
-const storage = new MongoDbStorage({
-    url: process.env.MONGO_URI,
-});
 
 const adapter = new SlackAdapter({
     clientId: process.env.CLIENT_ID,
@@ -48,7 +43,6 @@ adapter.use(new LoggerMiddleware());
 const controller = new Botkit({
     webhook_uri: "/api/messages",
     adapter,
-    storage,
 });
 
 controller.ready(() => {
@@ -57,7 +51,7 @@ controller.ready(() => {
     controller.loadModules(`${__dirname}/commands`);
 });
 
-controller.webserver.get("/", (req, res) => {
+controller.webserver.get("/", (_req, res) => {
     res.send(`This app is running Botkit ${controller.version}.`);
 });
 
@@ -80,10 +74,13 @@ controller.webserver.get("/install/auth", async (req, res) => {
         userCache[results.team_id] = results.bot_user_id;
 
         res.json("Success! Bot installed.");
-    } catch (err) {
-        console.error("OAUTH ERROR:", err);
+    } catch (error) {
+        console.error("OAUTH ERROR:", error);
         res.status(401);
-        res.send(err.message);
+
+        if (error instanceof Error) {
+            res.send(error.message);
+        }
     }
 });
 
@@ -100,30 +97,20 @@ if (process.env.USERS) {
     console.log("userCache:", userCache);
 }
 
-async function getTokenForTeam(teamId): Promise<string> {
+async function getTokenForTeam(teamId: string): Promise<string> {
     if (tokenCache[teamId]) {
-        return new Promise((resolve) => {
-            setTimeout(function () {
-                resolve(tokenCache[teamId]);
-            }, 150);
-        });
-    } else {
-        console.error("Team not found in tokenCache: ", teamId);
+        return tokenCache[teamId];
     }
 
+    console.error("Token not found in cache:", teamId);
     return "";
 }
 
-async function getBotUserByTeam(teamId): Promise<string> {
+async function getBotUserByTeam(teamId: string): Promise<string> {
     if (userCache[teamId]) {
-        return new Promise((resolve) => {
-            setTimeout(function () {
-                resolve(userCache[teamId]);
-            }, 150);
-        });
-    } else {
-        console.error("Team not found in userCache: ", teamId);
+        return userCache[teamId];
     }
 
+    console.error("User not found in cache:", teamId);
     return "";
 }
