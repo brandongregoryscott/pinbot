@@ -1,13 +1,10 @@
-# Botkit Starter Kit
+# Pinbot
 
-This is a Botkit starter kit for slack, created with the [Yeoman generator](https://github.com/howdyai/botkit/tree/master/packages/generator-botkit#readme).
+This is a Slack bot that re-shares messages when they are pinned, which was a feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
 
-To complete the configuration of this bot, make sure to update the included `.env` file with your platform tokens and credentials.
+## Tech
 
-[Botkit Docs](https://botkit.ai/docs/v4)
-
-This bot is powered by [a folder full of modules](https://botkit.ai/docs/v4/core.html#organize-your-bot-code).
-Edit the samples, and add your own in the [features/](features/) folder.
+-   [Botkit](https://github.com/howdyai/botkit)
 
 # Running Locally
 
@@ -41,3 +38,7 @@ Visit the Event Subscriptions page https://api.slack.com/apps/{appId}/event-subs
 ![Event Subscriptions page](./EventSubscriptions.png)
 
 It should look something like this: https://6edf-98-49-236-176.ngrok-free.app/api/messages, and Slack will send a request to verify the URL is listening.
+
+# Deployment
+
+Pinbot is currently deployed on [Render](https://render.com/).
