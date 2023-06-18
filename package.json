@@ -1,0 +1,49 @@
+{
+    "author": "Brandon Scott (https://github.com/brandongregoryscott), Joshua Peters (https://github.com/joshuapeters)",
+    "bugs": {
+        "url": "https://github.com/brandongregoryscott/pinbot/issues"
+    },
+    "dependencies": {
+        "botbuilder-adapter-slack": "1.0.13",
+        "botbuilder-storage-mongodb": "0.9.5",
+        "botkit": "4.10.0",
+        "botkit-plugin-cms": "1.0.3",
+        "dotenv": "7.0.0",
+        "p-throttle": "4.1.1"
+    },
+    "description": "A slack bot designed to share messages that are pinned, which was removed in a ~November 2016 Slack client update.",
+    "engines": {
+        "node": ">=14"
+    },
+    "homepage": "https://github.com/brandongregoryscott/pinbot#readme",
+    "keywords": [
+        "slack",
+        "pin",
+        "slack-bot",
+        "pinbot"
+    ],
+    "license": "Apache-2.0",
+    "main": "dist/bot.js",
+    "name": "pinbot",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/brandongregoryscott/pinbot.git"
+    },
+    "scripts": {
+        "build": "npm run clean && tsc --pretty --project tsconfig.json",
+        "clean": "rimraf dist",
+        "dev": "nodemon --unhandled-rejections=none dist/bot.js",
+        "start": "node dist/bot.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "npm run clean && tsc --pretty --project tsconfig.json --watch"
+    },
+    "version": "1.0.0",
+    "devDependencies": {
+        "@slack/web-api": "6.1.0",
+        "nodemon": "2.0.22",
+        "prettier": "2.2.1",
+        "rimraf": "3.0.2",
+        "typescript": "5.1.3"
+    }
+}
