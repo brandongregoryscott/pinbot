@@ -6,7 +6,7 @@ import { Message } from "../interfaces/slack/message";
 import { Pin } from "../interfaces/slack/pin";
 import { Profile } from "../interfaces/slack/profile";
 import { BotkitUtils } from "../utilities/botkit-utils";
-import { MessageUtils } from "../utilities/message-utils";
+import { toPinReply } from "../utilities/message-utils";
 
 const handlePinAdded: SlackBotkitHandler = async (
     bot: SlackBotWorker,
@@ -23,7 +23,7 @@ const handlePinAdded: SlackBotkitHandler = async (
     });
     const channel = conversationResponse.channel as Channel;
 
-    const response = MessageUtils.toPinReply(incomingMessage, channel, profile);
+    const response = toPinReply(incomingMessage, channel, profile);
     await bot.reply(message, response);
 };
 
