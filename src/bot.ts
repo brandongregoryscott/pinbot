@@ -7,7 +7,7 @@ import {
 import dotenv from "dotenv";
 import { LoggerMiddleware } from "./middlewares/logger-middleware";
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.ENV !== "production") {
     // Load process.env values from .env file
     dotenv.config();
 }
