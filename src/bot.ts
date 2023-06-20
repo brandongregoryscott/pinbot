@@ -4,7 +4,6 @@ import {
     SlackMessageTypeMiddleware,
     SlackEventMiddleware,
 } from "botbuilder-adapter-slack";
-import dotenv from "dotenv";
 import { LoggerMiddleware } from "./middlewares/logger-middleware";
 import {
     CLIENT_ID,
@@ -15,11 +14,6 @@ import {
     USERS,
 } from "./utilities/config";
 import isEmpty from "lodash/isEmpty";
-
-if (process.env.ENV !== "production") {
-    // Load process.env values from .env file
-    dotenv.config();
-}
 
 const adapter = new SlackAdapter({
     clientId: CLIENT_ID,

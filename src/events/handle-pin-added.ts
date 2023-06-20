@@ -6,26 +6,21 @@ import { Message } from "../interfaces/slack/message";
 import { Pin } from "../interfaces/slack/pin";
 import { Profile } from "../interfaces/slack/profile";
 import { BotkitUtils } from "../utilities/botkit-utils";
-import { toPinReply } from "../utilities/message-utils";
+import { Message as BuildMessage } from "slack-block-builder";
 
-const handlePinAdded: SlackBotkitHandler = async (
+const _handlePinAdded: SlackBotkitHandler = async (
     bot: SlackBotWorker,
     message: BotkitMessage
 ) => {
     const pin = message.item as Pin;
-    const incomingMessage: Message = pin.message!;
-    const userResponse = (await bot.api.users.info({
-        user: incomingMessage.user,
-    })) as any;
-    const profile: Profile = userResponse.user.profile;
-    const conversationResponse = await bot.api.conversations.info({
-        channel: pin.channel!,
-    });
-    const channel = conversationResponse.channel as Channel;
+    const response = BuildMessage({
+        text: pin.message?.permalink,
+    }).buildToObject();
 
-    const response = toPinReply(incomingMessage, channel, profile);
     await bot.reply(message, response);
 };
 
-export default (controller: Botkit) =>
-    BotkitUtils.on(controller, "pin_added", handlePinAdded);
+const handlePinAdded = (controller: Botkit) =>
+    BotkitUtils.on(controller, "pin_added", _handlePinAdded);
+
+export default handlePinAdded;
