@@ -1,47 +1,34 @@
 import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { Botkit, BotkitMessage, BotWorker } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
-import { StringUtils } from "./string-utils";
+import { Md, Message } from "slack-block-builder";
+import isError from "lodash/isError";
 
-const BotkitUtils = {
-    hears(
-        controller: Botkit,
-        patterns: string | RegExp,
-        events: string | string[],
-        handler: SlackBotkitHandler
-    ) {
-        return controller.hears(patterns, events, this.tryCatch(handler));
-    },
-    on(
-        controller: Botkit,
-        events: string | string[],
-        handler: SlackBotkitHandler
-    ) {
-        return controller.on(events, this.tryCatch(handler));
-    },
-    tryCatch(handler: SlackBotkitHandler) {
-        return async (bot: BotWorker, message: BotkitMessage) => {
-            try {
-                await handler(bot as SlackBotWorker, message);
-            } catch (error) {
-                if (!(error instanceof Error)) {
-                    console.log(
-                        `Unexpected error type: ${typeof error}`,
-                        error
-                    );
-                    return;
-                }
+const hears = (
+    patterns: string | RegExp,
+    events: string | string[],
+    handler: SlackBotkitHandler
+) => (controller: Botkit) =>
+    controller.hears(patterns, events, safeHandler(handler));
 
-                console.log(error);
-                const errorAsJson = JSON.stringify(error, undefined, 4);
-                const formattedError =
-                    errorAsJson !== "{}" ? errorAsJson : error.toString();
-                await bot.say(
-                    `Error: ${StringUtils.formatCodeBlock(formattedError)}`
-                );
-            }
-        };
-    },
+const on = (events: string | string[], handler: SlackBotkitHandler) => (
+    controller: Botkit
+) => controller.on(events, safeHandler(handler));
+
+const safeHandler = (handler: SlackBotkitHandler) => async (
+    bot: BotWorker,
+    message: BotkitMessage
+) => {
+    try {
+        await handler(bot as SlackBotWorker, message);
+    } catch (error) {
+        const text = isError(error)
+            ? error.message
+            : JSON.stringify(error, undefined, 4);
+        await bot.say(
+            Message({ text: `Error:\n${Md.codeBlock(text)}` }).buildToObject()
+        );
+    }
 };
 
-export { BotkitUtils };
+export { on, hears };

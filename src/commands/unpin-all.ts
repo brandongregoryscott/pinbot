@@ -1,16 +1,13 @@
-import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { PinsListResponse } from "../interfaces/slack/pins-list-response";
-import { Botkit, BotkitHandler, BotkitMessage, BotWorker } from "botkit";
+import { Botkit } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Pin } from "../interfaces/slack/pin";
 import { throttle } from "../utilities/core-utils";
+import { hears, on } from "../utilities/botkit-utils";
 
 const UNPIN_ALL_KEY = "unpin_all";
 
-const handleBlockActions: SlackBotkitHandler = async (
-    bot: SlackBotWorker,
-    message: BotkitMessage
-) => {
+const handleBlockActions: SlackBotkitHandler = async (bot, message) => {
     const { actions } = message?.incoming_message?.channelData;
     if (actions == null || actions.length <= 0) {
         return;
@@ -64,10 +61,9 @@ const handleBlockActions: SlackBotkitHandler = async (
     return;
 };
 
-module.exports = function (controller: Botkit) {
-    controller.on("block_actions", handleBlockActions as BotkitHandler);
-
-    controller.hears("unpin all", "direct_mention", async (bot, message) => {
+const handleUnpinAll = (controller: Botkit) => {
+    on("block_actions", handleBlockActions)(controller);
+    hears("unpin all", "direct_mention", async (bot, message) => {
         await bot.reply(message, {
             blocks: [
                 {
@@ -107,5 +103,7 @@ module.exports = function (controller: Botkit) {
                 },
             ],
         });
-    });
+    })(controller);
 };
+
+export default handleUnpinAll;

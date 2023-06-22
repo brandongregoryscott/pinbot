@@ -1,4 +1,5 @@
 import { Middleware, TurnContext, Activity } from "botbuilder-core";
+import { DEBUG } from "../utilities/config";
 
 class LoggerMiddleware implements Middleware {
     constructor() {}
@@ -7,8 +8,7 @@ class LoggerMiddleware implements Middleware {
         context: TurnContext,
         next: () => Promise<void>
     ): Promise<void> {
-        const debug = process.env.DEBUG === "true";
-        if (debug) {
+        if (DEBUG) {
             logActivity(context.activity);
         }
 
@@ -25,7 +25,6 @@ const logActivity = (activity: Activity) => {
     console.log(`Type: ${type}`);
     console.log(`From: ${from.id}`);
     console.log(JSON.stringify(activity, undefined, 4));
-    divider();
 };
 
 export { LoggerMiddleware };
