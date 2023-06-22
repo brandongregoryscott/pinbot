@@ -1,18 +1,13 @@
-import { SlackBotWorker } from "botbuilder-adapter-slack";
-import { Botkit, BotkitMessage } from "botkit";
 import { ChannelType } from "../enums/channel-type";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Channel } from "../interfaces/slack/channel";
 import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
-import { BotkitUtils } from "../utilities/botkit-utils";
+import { hears } from "../utilities/botkit-utils";
 import { filterByNonMember } from "../utilities/channel-utils";
-import { StringUtils } from "../utilities/string-utils";
 import { throttle } from "../utilities/core-utils";
+import { Md } from "slack-block-builder";
 
-const handleJoinAll: SlackBotkitHandler = async (
-    bot: SlackBotWorker,
-    message: BotkitMessage
-) => {
+const _handleJoinAll: SlackBotkitHandler = async (bot) => {
     const { channels: publicChannels } = (await bot.api.conversations.list({
         exclude_archived: true,
         types: ChannelType.Public,
@@ -38,12 +33,15 @@ const handleJoinAll: SlackBotkitHandler = async (
     await Promise.all(joinChannelPromises);
 
     await bot.say(
-        `Finished joining ${publicChannelsToJoin.length} channels: ${joinChannelNames}`
+        `Finished joining ${
+            publicChannelsToJoin.length
+        } channels: ${joinChannelNames(publicChannelsToJoin)}`
     );
 };
 
 const joinChannelNames = (channels: Channel[]): string =>
-    StringUtils.formatCodeBlock(channels.map((e) => e.name).join(", "));
+    Md.codeBlock(channels.map((e) => e.name).join(", "));
 
-export default (controller: Botkit) =>
-    BotkitUtils.hears(controller, "join all", "direct_mention", handleJoinAll);
+const handleJoinAll = hears("join all", "direct_mention", _handleJoinAll);
+
+export default handleJoinAll;

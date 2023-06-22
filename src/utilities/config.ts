@@ -14,6 +14,8 @@ const TOKENS: Record<string, string> = isEmpty(process.env.TOKENS)
     ? {}
     : JSON.parse(process.env.TOKENS!);
 
+const DEBUG = process.env.DEBUG === "true";
+
 const {
     CHANNEL,
     CLIENT_ID,
@@ -24,6 +26,7 @@ const {
 
 export {
     CHANNEL,
+    DEBUG,
     USERS,
     TOKENS,
     CLIENT_ID,

@@ -1,22 +1,17 @@
-import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { PinsListResponse } from "../interfaces/slack/pins-list-response";
-import { Botkit, BotkitHandler, BotkitMessage } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
 import { ChannelType } from "../enums/channel-type";
-import { BotkitUtils } from "../utilities/botkit-utils";
+import { hears } from "../utilities/botkit-utils";
 import { Pin } from "../interfaces/slack/pin";
 import { PinType } from "../enums/pin-type";
 import { filterByIsMember } from "../utilities/channel-utils";
 import { randomItem } from "../utilities/core-utils";
 import isEmpty from "lodash/isEmpty";
 import { CHANNEL } from "../utilities/config";
-import { Message } from "slack-block-builder";
+import { buildPinMessage } from "../utilities/message-utils";
 
-const _handleRandomPin: SlackBotkitHandler = async (
-    bot: SlackBotWorker,
-    message: BotkitMessage
-) => {
+const _handleRandomPin: SlackBotkitHandler = async (bot, message) => {
     let { channels } = (await bot.api.conversations.list({
         exclude_archived: true,
         types: ChannelType.Public,
@@ -38,19 +33,9 @@ const _handleRandomPin: SlackBotkitHandler = async (
         (pin: Pin) => pin.type === PinType.Message && pin.message != null
     );
 
-    const response = Message({
-        text: randomPin.message?.permalink,
-    }).buildToObject();
-
-    await bot.reply(message, response);
+    await bot.reply(message, buildPinMessage(randomPin.message?.permalink));
 };
 
-const handleRandomPin = (controller: Botkit) =>
-    BotkitUtils.hears(
-        controller,
-        /r|random/gi,
-        "direct_mention",
-        _handleRandomPin as BotkitHandler
-    );
+const handleRandomPin = hears(/r|random/gi, "direct_mention", _handleRandomPin);
 
 export default handleRandomPin;
