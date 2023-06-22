@@ -2,7 +2,7 @@ import { SlackBotWorker } from "botbuilder-adapter-slack";
 import { Botkit, BotkitMessage, BotWorker } from "botkit";
 import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Md, Message } from "slack-block-builder";
-import { isError } from "lodash";
+import isError from "lodash/isError";
 
 const hears = (
     patterns: string | RegExp,
