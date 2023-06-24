@@ -10,4 +10,4 @@ const _handlePinAdded: SlackBotkitHandler = async (bot, message) => {
 
 const handlePinAdded = on("pin_added", _handlePinAdded);
 
-export { handlePinAdded };
+export default handlePinAdded;

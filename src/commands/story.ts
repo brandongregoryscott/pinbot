@@ -16,4 +16,4 @@ const _handleStory: SlackBotkitHandler = async (bot, message) => {
 
 const handleStory = hears(/s|story/gi, "direct_mention", _handleStory);
 
-export { handleStory };
+export default handleStory;

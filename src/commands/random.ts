@@ -11,4 +11,4 @@ const _handleRandom: SlackBotkitHandler = async (bot, message) => {
 
 const handleRandom = hears(/r|random/gi, "direct_mention", _handleRandom);
 
-export { handleRandom };
+export default handleRandom;

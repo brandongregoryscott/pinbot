@@ -106,4 +106,4 @@ const handleUnpinAll = (controller: Botkit) => {
     })(controller);
 };
 
-export { handleUnpinAll };
+export default handleUnpinAll;

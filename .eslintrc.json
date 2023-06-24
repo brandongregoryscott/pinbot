@@ -14,5 +14,8 @@
         "typescript-sort-keys",
         "@typescript-eslint"
     ],
-    "rules": {}
+    "rules": {
+        // We need to default export functions in the commands/events directory
+        "collation/no-default-export": "off"
+    }
 }
