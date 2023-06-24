@@ -1,0 +1,18 @@
+{
+    "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "@brandongregoryscott/eslint-config",
+        "@brandongregoryscott/eslint-config/typescript"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "collation",
+        "import",
+        "typescript-sort-keys",
+        "@typescript-eslint"
+    ],
+    "rules": {}
+}

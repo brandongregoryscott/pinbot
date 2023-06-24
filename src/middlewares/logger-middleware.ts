@@ -1,9 +1,7 @@
-import { Middleware, TurnContext, Activity } from "botbuilder-core";
+import type { Middleware, TurnContext, Activity } from "botbuilder-core";
 import { DEBUG } from "../utilities/config";
 
 class LoggerMiddleware implements Middleware {
-    constructor() {}
-
     async onTurn(
         context: TurnContext,
         next: () => Promise<void>

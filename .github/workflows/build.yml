@@ -24,5 +24,11 @@ jobs:
             - name: npm ci
               run: npm ci
 
+            - name: npm run lint
+              run: npm run lint
+
+            - name: npm run test
+              run: npm run test
+
             - name: npm run build
               run: npm run build

@@ -1,7 +1,7 @@
-import { PinsListResponse } from "../interfaces/slack/pins-list-response";
-import { Botkit } from "botkit";
-import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
-import { Pin } from "../interfaces/slack/pin";
+import type { PinsListResponse } from "../interfaces/slack/pins-list-response";
+import type { Botkit } from "botkit";
+import type { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import type { Pin } from "../interfaces/slack/pin";
 import { throttle } from "../utilities/core-utils";
 import { hears, on } from "../utilities/botkit-utils";
 
@@ -27,7 +27,7 @@ const handleBlockActions: SlackBotkitHandler = async (bot, message) => {
         const removePinPromises = pins.map(
             throttle(async (pin: Pin) =>
                 bot.api.pins.remove({
-                    channel: pin.channel!,
+                    channel: pin.channel ?? "",
                     timestamp:
                         pin.message?.ts ?? pin.file?.timestamp.toString(),
                 })
@@ -106,4 +106,4 @@ const handleUnpinAll = (controller: Botkit) => {
     })(controller);
 };
 
-export default handleUnpinAll;
+export { handleUnpinAll };

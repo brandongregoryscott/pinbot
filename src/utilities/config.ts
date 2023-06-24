@@ -8,11 +8,11 @@ if (process.env.ENV !== "production") {
 
 const USERS: Record<string, string> = isEmpty(process.env.USERS)
     ? {}
-    : JSON.parse(process.env.USERS!);
+    : JSON.parse(process.env.USERS ?? "");
 
 const TOKENS: Record<string, string> = isEmpty(process.env.TOKENS)
     ? {}
-    : JSON.parse(process.env.TOKENS!);
+    : JSON.parse(process.env.TOKENS ?? "");
 
 const DEBUG = process.env.DEBUG === "true";
 
@@ -26,11 +26,11 @@ const {
 
 export {
     CHANNEL,
-    DEBUG,
-    USERS,
-    TOKENS,
     CLIENT_ID,
     CLIENT_SECRET,
     CLIENT_SIGNING_SECRET,
+    DEBUG,
     REDIRECT_URI,
+    TOKENS,
+    USERS,
 };

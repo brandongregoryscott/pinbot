@@ -1,6 +1,6 @@
-import { PinType } from "../../enums/pin-type";
-import { File } from "./file";
-import { Message } from "./message";
+import type { PinType } from "../../enums/pin-type";
+import type { File } from "./file";
+import type { Message } from "./message";
 
 interface Pin {
     channel?: string;
@@ -11,4 +11,4 @@ interface Pin {
     type: PinType;
 }
 
-export { Pin };
+export type { Pin };

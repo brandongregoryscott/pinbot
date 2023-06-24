@@ -1,19 +1,19 @@
-import { PinType } from "../../enums/pin-type";
-import { Attachment } from "./attachment";
-import { File } from "./file";
+import type { PinType } from "../../enums/pin-type";
+import type { Attachment } from "./attachment";
+import type { File } from "./file";
 
 interface Message {
     attachments?: Attachment[];
-    blocks?: any[];
+    blocks?: unknown[];
     files?: File[];
-    user: string;
+    permalink: string;
+    pinned_to?: string[];
     team: string;
     text: string;
     ts: string;
-    permalink: string;
-    pinned_to?: string[];
-    upload?: boolean;
     type: PinType;
+    upload?: boolean;
+    user: string;
 }
 
-export { Message };
+export type { Message };

@@ -26,4 +26,4 @@ const formatTimestamp = (timestamp: string): string => {
     return date.toDateString();
 };
 
-export { formatTimestamp, throttle, randomInt, randomItem };
+export { formatTimestamp, randomInt, randomItem, throttle };

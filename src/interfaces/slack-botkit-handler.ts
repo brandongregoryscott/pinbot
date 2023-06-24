@@ -1,8 +1,8 @@
-import { SlackBotWorker } from "botbuilder-adapter-slack";
-import { BotkitMessage } from "botkit";
+import type { SlackBotWorker } from "botbuilder-adapter-slack";
+import type { BotkitMessage } from "botkit";
 
 interface SlackBotkitHandler {
-    (bot: SlackBotWorker, message: BotkitMessage): Promise<any>;
+    (bot: SlackBotWorker, message: BotkitMessage): Promise<unknown>;
 }
 
-export { SlackBotkitHandler };
+export type { SlackBotkitHandler };
