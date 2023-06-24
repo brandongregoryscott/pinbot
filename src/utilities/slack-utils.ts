@@ -31,7 +31,8 @@ const getRandomPin = async (api: WebClient): Promise<Pin> => {
 
     return randomItem(
         pins,
-        (pin: Pin) => pin.type === PinType.Message && pin.message != null
+        (pin) =>
+            pin != null && pin.type === PinType.Message && pin.message != null
     );
 };
 
