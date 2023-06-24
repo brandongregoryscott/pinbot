@@ -7,8 +7,8 @@ const randomItem = <T>(items: T[], filter?: (item: T) => boolean): T => {
         return items[randomInt(items.length)];
     }
 
-    items = items.filter(filter);
-    return items[randomInt(items.length)];
+    const filteredItems = items.filter(filter);
+    return randomItem(filteredItems);
 };
 
 const throttle = <TArgs extends readonly unknown[], TReturnValue>(
