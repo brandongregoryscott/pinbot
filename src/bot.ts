@@ -14,6 +14,7 @@ import {
     USERS,
 } from "./utilities/config";
 import isEmpty from "lodash/isEmpty";
+import type { Request, Response } from "express";
 
 const adapter = new SlackAdapter({
     clientId: CLIENT_ID,
@@ -56,39 +57,42 @@ controller.ready(() => {
     controller.loadModules(`${__dirname}/commands`);
 });
 
-controller.webserver.get("/", (_req, res) => {
+controller.webserver.get("/", (_req: Request, res: Response) => {
     res.send(`This app is running Botkit ${controller.version}.`);
 });
 
-controller.webserver.get("/install", (_req, res) => {
+controller.webserver.get("/install", (_req: Request, res: Response) => {
     res.redirect(controller.adapter.getInstallLink());
 });
 
-controller.webserver.get("/install/auth", async (req, res) => {
-    try {
-        const results = await controller.adapter.validateOauthCode(
-            req.query.code
-        );
+controller.webserver.get(
+    "/install/auth",
+    async (req: Request, res: Response) => {
+        try {
+            const results = await controller.adapter.validateOauthCode(
+                req.query.code
+            );
 
-        const { team_id, access_token, bot_user_id } = results;
-        console.log({ team_id, access_token, bot_user_id });
+            const { team_id, access_token, bot_user_id } = results;
+            console.log({ team_id, access_token, bot_user_id });
 
-        // Store token by team in bot state.
-        TOKENS[team_id] = access_token;
+            // Store token by team in bot state.
+            TOKENS[team_id] = access_token;
 
-        // Capture team to bot id
-        USERS[team_id] = bot_user_id;
+            // Capture team to bot id
+            USERS[team_id] = bot_user_id;
 
-        res.json("Success! Bot installed.");
-    } catch (error) {
-        console.error("OAUTH ERROR:", error);
-        res.status(401);
+            res.json("Success! Bot installed.");
+        } catch (error) {
+            console.error("OAUTH ERROR:", error);
+            res.status(401);
 
-        if (error instanceof Error) {
-            res.send(error.message);
+            if (error instanceof Error) {
+                res.send(error.message);
+            }
         }
     }
-});
+);
 
 /**
  * A method that receives a Slack team id and returns the bot user id associated with that team. Required for multi-team apps.

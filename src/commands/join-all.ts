@@ -45,5 +45,3 @@ const joinChannelNames = (channels: Channel[]): string =>
 const handleJoinAll = hears("join all", "direct_mention", _handleJoinAll);
 
 export { handleJoinAll };
-
-
