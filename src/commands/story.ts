@@ -1,4 +1,4 @@
-import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import type { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { hears } from "../utilities/botkit-utils";
 import { randomItem } from "../utilities/core-utils";
 import { buildPinMessage } from "../utilities/message-utils";

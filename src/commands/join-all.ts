@@ -1,7 +1,7 @@
 import { ChannelType } from "../enums/channel-type";
-import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
-import { Channel } from "../interfaces/slack/channel";
-import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
+import type { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import type { Channel } from "../interfaces/slack/channel";
+import type { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
 import { hears } from "../utilities/botkit-utils";
 import { filterByNonMember } from "../utilities/channel-utils";
 import { throttle } from "../utilities/core-utils";

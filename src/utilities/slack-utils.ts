@@ -1,14 +1,14 @@
 import range from "lodash/range";
-import { Pin } from "../interfaces/slack/pin";
+import type { Pin } from "../interfaces/slack/pin";
 import { CHANNEL } from "./config";
 import isEmpty from "lodash/isEmpty";
 import { randomItem } from "./core-utils";
-import { PinsListResponse } from "../interfaces/slack/pins-list-response";
+import type { PinsListResponse } from "../interfaces/slack/pins-list-response";
 import { PinType } from "../enums/pin-type";
 import { filterByIsMember } from "./channel-utils";
-import { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
+import type { ChannelsListResponse } from "../interfaces/slack/channels-list-response";
 import { ChannelType } from "../enums/channel-type";
-import { SlackBotWorker } from "botbuilder-adapter-slack";
+import type { SlackBotWorker } from "botbuilder-adapter-slack";
 
 type WebClient = SlackBotWorker["api"];
 
@@ -22,16 +22,17 @@ const getRandomPin = async (api: WebClient): Promise<Pin> => {
     channels = filterByIsMember(channels);
 
     const randomChannel = !isEmpty(CHANNEL)
-        ? channels.find((channel) => channel.name === CHANNEL)!
+        ? channels.find((channel) => channel.name === CHANNEL)
         : randomItem(channels);
 
     const { items: pins } = (await api.pins.list({
-        channel: randomChannel.id,
+        channel: randomChannel?.id ?? "",
     })) as PinsListResponse;
 
     return randomItem(
         pins,
-        (pin: Pin) => pin.type === PinType.Message && pin.message != null
+        (pin) =>
+            pin != null && pin.type === PinType.Message && pin.message != null
     );
 };
 

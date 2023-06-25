@@ -1,6 +1,6 @@
 enum ChannelType {
-    Public = "public_channel",
     Private = "private_channel",
+    Public = "public_channel",
 }
 
 export { ChannelType };

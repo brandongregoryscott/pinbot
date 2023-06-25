@@ -1,5 +1,5 @@
-import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
-import { Pin } from "../interfaces/slack/pin";
+import type { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import type { Pin } from "../interfaces/slack/pin";
 import { on } from "../utilities/botkit-utils";
 import { buildPinMessage } from "../utilities/message-utils";
 

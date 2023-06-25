@@ -1,4 +1,5 @@
-import { Message, SlackMessageDto } from "slack-block-builder";
+import type { SlackMessageDto } from "slack-block-builder";
+import { Message } from "slack-block-builder";
 
 const buildPinMessage = (
     permalink: string | undefined

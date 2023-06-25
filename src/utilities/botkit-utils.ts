@@ -1,17 +1,17 @@
-import { SlackBotWorker } from "botbuilder-adapter-slack";
-import { Botkit, BotkitMessage, BotWorker } from "botkit";
-import { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
+import type { SlackBotWorker } from "botbuilder-adapter-slack";
+import type { Botkit, BotkitMessage, BotWorker } from "botkit";
+import type { SlackBotkitHandler } from "../interfaces/slack-botkit-handler";
 import { Md, Message } from "slack-block-builder";
 import isError from "lodash/isError";
 
 const hears = (
-    patterns: string | RegExp,
-    events: string | string[],
+    patterns: RegExp | string,
+    events: string[] | string,
     handler: SlackBotkitHandler
 ) => (controller: Botkit) =>
     controller.hears(patterns, events, safeHandler(handler));
 
-const on = (events: string | string[], handler: SlackBotkitHandler) => (
+const on = (events: string[] | string, handler: SlackBotkitHandler) => (
     controller: Botkit
 ) => controller.on(events, safeHandler(handler));
 
@@ -31,4 +31,4 @@ const safeHandler = (handler: SlackBotkitHandler) => async (
     }
 };
 
-export { on, hears };
+export { hears, on };
