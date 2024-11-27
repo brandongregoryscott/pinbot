@@ -4,47 +4,18 @@
     <img alt="build status" src="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yml/badge.svg"/>
 </a>
 
-Pinbot is a Slack bot that re-shares messages when they are pinned, which was a feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
+Pinbot is a Discord bot that re-shares messages when they are pinned, which was a Slack feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
 
-## Tech
 
--   [Botkit](https://github.com/howdyai/botkit)
--   [Botbuilder Adapter Slack](https://github.com/howdyai/botkit/tree/main/packages/botbuilder-adapter-slack)
--   [Slack Block Builder](https://github.com/raycharius/slack-block-builder)
+## Development
 
-# Running Locally
+### Requirements
 
-To run `pinbot` locally, you'll need to make sure you have Ngrok installed (`brew install ngrok`), and you'll likely want to set up a "Development" app so the production app can continue running with separate credentials.
-
-First, set up your `.env` file:
+- [Ruby](https://www.ruby-lang.org/) installed
+- [Discord application](https://discord.com/developers/applications) with [Privileged Gateway Intents]() enabled
+    - These can be enabled on the Bot page, i.e. https://discord.com/developers/applications/:applicationId/bot. This is the same page that the Bot token can be generated or reset.
 
 ```sh
-cp .env.sample .env
+bundle install
+BOT_TOKEN=FOO.123_bar ruby src/pinbot.py
 ```
-
-Visit the App Credentials page https://api.slack.com/apps/{appId}/general and fill in the required values:
-
-![App Credentials](./AppCredentials.png)
-
-```sh
-# Terminal #1
-npm run watch
-
-# Terminal #2
-npm run dev
-
-# Terminal #3
-ngrok http 3000
-```
-
-Once you have an Ngrok tunnel set up, you'll need to edit the webhook URL that Slack posts messages to.
-
-Visit the Event Subscriptions page https://api.slack.com/apps/{appId}/event-subscriptions and edit the Request URL.
-
-![Event Subscriptions page](./EventSubscriptions.png)
-
-It should look something like this: https://6edf-98-49-236-176.ngrok-free.app/api/messages, and Slack will send a request to verify the URL is listening.
-
-# Deployment
-
-Pinbot is currently deployed on [Render](https://render.com/).
