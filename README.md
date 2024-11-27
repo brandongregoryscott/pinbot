@@ -1,11 +1,6 @@
 # Pinbot
 
-<a href="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yml">
-    <img alt="build status" src="https://github.com/brandongregoryscott/pinbot/actions/workflows/build.yml/badge.svg"/>
-</a>
-
 Pinbot is a Discord bot that re-shares messages when they are pinned, which was a Slack feature that was removed in November 2016. It also provides some additional commands around pins, such as the _random_ pin.
-
 
 ## Development
 
