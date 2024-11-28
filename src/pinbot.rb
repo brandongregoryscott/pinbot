@@ -12,8 +12,14 @@ MESSAGE_FORWARD_TYPE = 1
 def main
   bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 
+  bot.message_update do |event|
+    next unless event.message.pinned?
+
+    forward_message(event, event.message)
+  end
+
   bot.mention do |event|
-    return if event.server.nil? || !is_random_command?(event.content)
+    next if event.server.nil? || !is_random_command?(event.content)
 
     pin = random_pin(event)
     forward_message(event, pin)
