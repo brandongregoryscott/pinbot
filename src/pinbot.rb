@@ -13,10 +13,10 @@ def main
   bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 
   bot.mention do |event|
-    if is_random_command?(event.content)
-      pin = random_pin(event)
-      forward_message(event, pin)
-    end
+    return if event.server.nil? || !is_random_command?(event.content)
+
+    pin = random_pin(event)
+    forward_message(event, pin)
   end
 
   bot.run
@@ -48,8 +48,18 @@ def forward_message(event, message)
   event.send_message(content, tts, embed, attachments, allowed_mentions, message_reference)
 end
 
+def random_channel(event)
+  channels =  event.server.text_channels
+  channel = channels.sample
+  until /[0-9]+/.match?(channel.name)
+    channel = channels.sample
+  end
+
+  channel
+end
+
 def random_pin(event)
-  channel = (event.server.nil? ? [] : event.server.text_channels).sample
+  channel = random_channel(event)
   pins = is_imported_channel?(channel) ? channel.history(100) : channel.pins
   pin = pins.sample
 
