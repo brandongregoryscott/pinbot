@@ -31,7 +31,7 @@ end
 
 def is_random_command?(content)
   message = content.split('>').last.strip
-  message.end_with?('r') || message.end_with?('random')
+  message.end_with?('t') || message.end_with?('test')
 end
 
 def is_imported_channel?(channel)
@@ -39,7 +39,27 @@ def is_imported_channel?(channel)
   channel_number < FINAL_SLACK_CHANNEL_NUMBER
 end
 
+def send_message_context(event, message)
+  author = message.author
+  content = ''
+  tts = nil
+  embed = [{
+     'timestamp' => message.timestamp.nil? ? nil : message.timestamp.iso8601,
+     'author': {
+       'name' => author.display_name,
+       'icon_url' => author.avatar_url,
+     }
+  }]
+  attachments = nil
+  allowed_mentions = nil
+  message_reference = nil
+
+  event.send_message(content, tts, embed, attachments, allowed_mentions, message_reference)
+end
+
 def forward_message(event, message)
+  send_message_context(event, message)
+
   content = ''
   tts = nil
   embed = nil
