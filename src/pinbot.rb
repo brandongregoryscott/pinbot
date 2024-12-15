@@ -49,7 +49,7 @@ end
 def forward_message(event, message)
   author = message.author
   timestamp = is_imported_pin?(message) ? get_imported_pin_timestamp(message) : message.timestamp.iso8601
-  channel_link = "[##{message.channel.name} • #{DateTime.parse(timestamp).strftime('%d/%m/%Y %l:%M %p')}](#{message.link})"
+  channel_link = "[##{message.channel.name} • #{DateTime.parse(timestamp).strftime('%-m/%-d/%Y %l:%M %p')}](#{message.link})"
   message_content = message.content.gsub(/`[0-9]{2}:[0-9]{2}` /, '')
   content = ''
   tts = nil
