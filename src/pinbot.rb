@@ -34,7 +34,7 @@ end
 
 def is_random_command?(content)
   message = content.split('>').last.strip
-  message.end_with?('t') || message.end_with?('test')
+  message.start_with?('r') || message.start_with?('random') || message.end_with?('r') || message.end_with?('random')
 end
 
 def is_imported_channel?(channel)
