@@ -40,6 +40,8 @@ end
 def is_imported_channel?(channel)
   channel_number = Integer(channel.name.match(/[0-9]{3}/).to_s.gsub('0', ''))
   channel_number < FINAL_SLACK_CHANNEL_NUMBER
+rescue ArgumentError
+  false
 end
 
 def is_imported_pin?(message)
@@ -48,8 +50,8 @@ end
 
 def forward_message(event, message)
   author = message.author
-  timestamp = is_imported_pin?(message) ? get_imported_pin_timestamp(message) : message.timestamp.iso8601
-  channel_link = "[##{message.channel.name} • #{DateTime.parse(timestamp).strftime('%-m/%-d/%Y %l:%M %p')}](#{message.link})"
+  timestamp = is_imported_pin?(message) ? get_imported_pin_timestamp(message) : DateTime.parse(message.timestamp.to_s).new_offset('-05:00')
+  channel_link = "[##{message.channel.name} • #{timestamp.strftime('%-m/%-d/%Y %l:%M %p')}](#{message.link})"
   message_content = message.content.gsub(/`[0-9]{2}:[0-9]{2}` /, '')
   content = ''
   tts = nil
@@ -105,7 +107,7 @@ def get_imported_pin_timestamp(pin)
 
   date = timestamp_message.content.gsub(TIMESTAMP_MESSAGE_PREFIX, '').gsub(TIMESTAMP_MESSAGE_POSTFIX, '')
   timestamp = pin.content.match(/[0-9]{2}:[0-9]{2}/).to_s
-  DateTime.parse("#{date}T#{timestamp}").iso8601
+  DateTime.parse("#{date}T#{timestamp}")
 end
 
 main
