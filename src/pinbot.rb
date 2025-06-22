@@ -55,6 +55,13 @@ def forward_message(event, message)
   message_content = message.content.gsub(/`[0-9]{2}:[0-9]{2}` /, '')
   content = ''
   tts = nil
+  attachment = message.attachments.empty? ? nil : message.attachments.first
+  image = attachment.nil? ? nil : {
+    'proxy_url' => attachment.proxy_url,
+    'url' => attachment.url,
+    'width' => attachment.width,
+    'height' => attachment.height,
+  }
   embed = [{
              'url' => message.link,
              'timestamp' => nil,
@@ -63,6 +70,7 @@ def forward_message(event, message)
                'name' => author.display_name,
                'icon_url' => author.avatar_url,
              },
+             'image' => image,
              'fields': [{
                           'name' => '',
                           'value' => channel_link,

@@ -12,5 +12,5 @@ Pinbot is a Discord bot that re-shares messages when they are pinned, which was 
 
 ```sh
 bundle install
-BOT_TOKEN=FOO.123_bar ruby src/pinbot.py
+BOT_TOKEN=FOO.123_bar ruby src/pinbot.rb
 ```
