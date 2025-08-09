@@ -13,16 +13,17 @@ MAX_CHANNEL_HISTORY_AMOUNT = 100
 TIMESTAMP_MESSAGE_PREFIX = '`----------'
 TIMESTAMP_MESSAGE_POSTFIX = '----------`'
 
-def main
-  bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
+$bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 
-  bot.message_update do |event|
+def main
+
+  $bot.message_update do |event|
     next unless event.message.pinned?
 
     forward_message(event, event.message)
   end
 
-  bot.mention do |event|
+  $bot.mention do |event|
     next if event.server.nil?
     if is_random_command?(event.content)
       handle_random_command(event)
@@ -33,7 +34,7 @@ def main
     end
   end
 
-  bot.run
+  $bot.run
 end
 
 def handle_random_command(event)
@@ -42,7 +43,9 @@ def handle_random_command(event)
 end
 
 def handle_pin_count_command(event)
-  pin_count = event.message.channel.pins.count
+  channel = $bot.channel(event.channel.id)
+  #noinspection RubyNilAnalysis
+  pin_count = channel.pins(limit: 500).count
   event.send_message("#{pin_count} :pushpin:")
 end
 

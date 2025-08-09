@@ -2,4 +2,4 @@
 
 source 'https://rubygems.org'
 
-gem 'discordrb'
+gem 'discordrb', git: 'https://github.com/shardlab/discordrb', ref: '01d69fe'
