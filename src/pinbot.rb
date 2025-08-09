@@ -23,13 +23,32 @@ def main
   end
 
   bot.mention do |event|
-    next if event.server.nil? || !is_random_command?(event.content)
+    next if event.server.nil?
+    if is_random_command?(event.content)
+      handle_random_command(event)
+    end
 
-    pin = random_pin(event)
-    forward_message(event, pin)
+    if is_pin_count_command?(event.content)
+      handle_pin_count_command(event)
+    end
   end
 
   bot.run
+end
+
+def handle_random_command(event)
+  pin = random_pin(event)
+  forward_message(event, pin)
+end
+
+def handle_pin_count_command(event)
+  pin_count = event.message.channel.pins.count
+  event.send_message("#{pin_count} :pushpin:")
+end
+
+def is_pin_count_command?(content)
+  message = content.split('>').last.strip.downcase
+  message.start_with?('pc') || message.start_with?('pincount') || message.start_with?('count')
 end
 
 def is_random_command?(content)
