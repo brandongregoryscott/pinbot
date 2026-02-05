@@ -1,0 +1,1 @@
+set -a && . /home/brandon/pinbot/.env && ruby /home/brandon/pinbot/src/pinbot.rb

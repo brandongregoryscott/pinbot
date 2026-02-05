@@ -11,14 +11,14 @@
 # sudo systemctl edit pinbot.service
 
 # To restart the system daemon & service
-sudo systemctl daemon-reload && sudo systemctl restart pinbot.service
+# sudo systemctl daemon-reload && sudo systemctl restart pinbot.service
 
 [Unit]
 Description=Discord pinbot
 After=network.target
 
 [Service]
-Type=forking
+Type=exec
 User=brandon
 Restart=always
 RestartSec=3s
@@ -27,8 +27,8 @@ RestartMaxDelaySec=3m
 RestartSteps=5
 RuntimeMaxSec=1d
 
-EnvironmentFile=/home/brandon/pinbot/.env
-ExecStart=ruby src/pinbot.rb
+WorkingDirectory=/home/brandon/pinbot
+ExecStart=sh start-pinbot.sh
 
 [Install]
 WantedBy=multi-user.target
