@@ -1,0 +1,6 @@
+services:
+  pinbot:
+    build: .
+    restart: always
+    env_file:
+      - .env
