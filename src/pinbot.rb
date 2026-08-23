@@ -13,6 +13,17 @@ MAX_CHANNEL_HISTORY_AMOUNT = 100
 TIMESTAMP_MESSAGE_PREFIX = '`----------'
 TIMESTAMP_MESSAGE_POSTFIX = '----------`'
 
+# The number of channels to try before giving up on finding an image pin
+MAX_IMAGE_CHANNEL_ATTEMPTS = 10
+
+HELP_MESSAGE = <<~'HELP'
+  Mention me with one of the following commands:
+  • `r`, `random` — send a random pin
+  • `ri`, `randomimage` — send a random image pin
+  • `pc`, `pincount`, `count` — count pins in this channel
+  • `help` — show this message
+HELP
+
 $bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 
 def main
@@ -25,11 +36,14 @@ def main
 
   $bot.mention do |event|
     next if event.server.nil?
-    if is_random_command?(event.content)
-      handle_random_command(event)
-    end
 
-    if is_pin_count_command?(event.content)
+    if is_help_command?(event.content)
+      handle_help_command(event)
+    elsif is_random_image_command?(event.content)
+      handle_random_image_command(event)
+    elsif is_random_command?(event.content)
+      handle_random_command(event)
+    elsif is_pin_count_command?(event.content)
       handle_pin_count_command(event)
     end
   end
@@ -40,6 +54,20 @@ end
 def handle_random_command(event)
   pin = random_pin(event)
   forward_message(event, pin)
+end
+
+def handle_random_image_command(event)
+  pin = random_image_pin(event)
+  if pin.nil?
+    event.send_message('No image pins found.')
+    return
+  end
+
+  forward_message(event, pin)
+end
+
+def handle_help_command(event)
+  event.send_message(HELP_MESSAGE)
 end
 
 def handle_pin_count_command(event)
@@ -54,9 +82,19 @@ def is_pin_count_command?(content)
   message.start_with?('pc') || message.start_with?('pincount') || message.start_with?('count')
 end
 
+def is_random_image_command?(content)
+  message = content.split('>').last.strip.downcase
+  message.start_with?('ri') || message.start_with?('randomimage')
+end
+
 def is_random_command?(content)
   message = content.split('>').last.strip
   message.start_with?('r') || message.start_with?('random') || message.end_with?('r') || message.end_with?('random')
+end
+
+def is_help_command?(content)
+  message = content.split('>').last.strip.downcase
+  message.start_with?('help')
 end
 
 def is_imported_channel?(channel)
@@ -126,6 +164,22 @@ def random_pin(event)
   end
 
   pin
+end
+
+def random_image_pin(event)
+  MAX_IMAGE_CHANNEL_ATTEMPTS.times do
+    channel = random_channel(event)
+    pins = is_imported_channel?(channel) ? channel.history(100) : channel.pins
+
+    # Don't return one of the date separator messages from an imported channel
+    image_pins = pins.select { |pin| pin.attachments.any?(&:image?) && !pin.content.include?(TIMESTAMP_MESSAGE_PREFIX) }
+
+    next if image_pins.empty?
+
+    return image_pins.sample
+  end
+
+  nil
 end
 
 def get_imported_pin_timestamp(pin)
