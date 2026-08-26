@@ -91,7 +91,7 @@ def handle_today_command(event)
   pin, timestamp, exact_match = result
   years_ago = Date.today.year - timestamp.year
   label = exact_match ? "ON THIS DAY — #{years_ago} YEARS AGO" : "AROUND THIS TIME — #{years_ago} YEARS AGO"
-  forward_message(event, pin, label, timestamp)
+  forward_message(event, pin, label)
 end
 
 def handle_pin_count_command(event)
@@ -137,9 +137,9 @@ def is_imported_pin?(message)
   is_imported_channel?(message.channel)
 end
 
-def forward_message(event, message, title = nil, timestamp = nil)
+def forward_message(event, message, title = nil)
   author = message.author
-  timestamp ||= pin_timestamp(message)
+  timestamp = pin_timestamp(message)
   channel_link = "[##{message.channel.name} • #{timestamp.strftime('%-m/%-d/%Y %l:%M %p')}](#{message.link})"
   message_content = message.content.gsub(/`[0-9]{2}:[0-9]{2}` /, '')
   content = ''
@@ -287,7 +287,7 @@ end
 def get_imported_pin_timestamp(pin)
   messages_before = pin.channel.history(MAX_CHANNEL_HISTORY_AMOUNT, pin.id)
 
-  timestamp_message = messages_before.reverse.select { |message| message.content.include?(TIMESTAMP_MESSAGE_PREFIX) }.first
+  timestamp_message = messages_before.select { |message| message.content.include?(TIMESTAMP_MESSAGE_PREFIX) }.max_by(&:id)
 
   return pin.timestamp if timestamp_message.nil?
 
