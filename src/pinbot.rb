@@ -287,7 +287,7 @@ end
 def get_imported_pin_timestamp(pin)
   messages_before = pin.channel.history(MAX_CHANNEL_HISTORY_AMOUNT, pin.id)
 
-  timestamp_message = messages_before.reverse.select { |message| message.content.include?(TIMESTAMP_MESSAGE_PREFIX) }.first
+  timestamp_message = messages_before.select { |message| message.content.include?(TIMESTAMP_MESSAGE_PREFIX) }.max_by(&:id)
 
   return pin.timestamp if timestamp_message.nil?
 
