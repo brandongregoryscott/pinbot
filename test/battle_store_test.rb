@@ -22,8 +22,11 @@ class BattleStoreTest < Minitest::Test
 
     assert battle
     refute_equal battle['pin_a_id'], battle['pin_b_id']
+    assert_equal '10', @store.pin(battle['pin_a_id'])['discord_channel_id']
+    assert_equal '20', @store.pin(battle['pin_b_id'])['discord_channel_id']
     assert_nil @store.start_battle(
-      pin_a_message_id: '333', pin_b_message_id: '444', channel_id: '999',
+      pin_a_message_id: '333', pin_a_channel_id: '30',
+      pin_b_message_id: '444', pin_b_channel_id: '40', channel_id: '999',
       started_at: @now, ends_at: @now + 3600
     )
     assert_equal battle['id'], @store.active_battle['id']
@@ -32,7 +35,8 @@ class BattleStoreTest < Minitest::Test
   def test_rejects_same_pin_on_both_sides
     assert_raises(ArgumentError) do
       @store.start_battle(
-        pin_a_message_id: '111', pin_b_message_id: '111', channel_id: '999',
+        pin_a_message_id: '111', pin_a_channel_id: '10',
+        pin_b_message_id: '111', pin_b_channel_id: '10', channel_id: '999',
         started_at: @now, ends_at: @now + 3600
       )
     end
@@ -121,7 +125,8 @@ class BattleStoreTest < Minitest::Test
       battle_id: battle['id'], discord_user_id: 'late', pin_id: battle['pin_b_id']
     )
     next_battle = @store.start_battle(
-      pin_a_message_id: '333', pin_b_message_id: '444', channel_id: '999',
+      pin_a_message_id: '333', pin_a_channel_id: '30',
+      pin_b_message_id: '444', pin_b_channel_id: '40', channel_id: '999',
       started_at: @now + 2, ends_at: @now + 3602
     )
     assert next_battle
@@ -156,11 +161,25 @@ class BattleStoreTest < Minitest::Test
     assert_equal 1, @store.pin(battle['pin_b_id'])['losses']
   end
 
+  def test_cancel_closes_battle_without_changing_totals
+    battle = start_battle
+    vote(battle, 'one', battle['pin_a_id'])
+
+    result = @store.cancel_battle(battle_id: battle['id'], ended_at: @now + 1)
+
+    assert_equal 'cancelled', result['status']
+    assert_nil @store.active_battle
+    assert_equal 0, @store.pin(battle['pin_a_id'])['wins']
+    assert_equal 0, @store.pin(battle['pin_b_id'])['losses']
+    assert_nil @store.cancel_battle(battle_id: battle['id'], ended_at: @now + 2)
+  end
+
   private
 
   def start_battle
     @store.start_battle(
-      pin_a_message_id: '111', pin_b_message_id: '222', channel_id: '999',
+      pin_a_message_id: '111', pin_a_channel_id: '10',
+      pin_b_message_id: '222', pin_b_channel_id: '20', channel_id: '999',
       started_at: @now, ends_at: @now + 3600
     )
   end

@@ -35,7 +35,9 @@ HELP_MESSAGE = <<~'HELP'
   • `ri`, `randomimage` — send a random image pin
   • `pc`, `pincount`, `count` — count pins in this channel
   • `t`, `today` — send a pin from this date in history
-  • `battle` — put two random pins head to head
+  • `b`, `battle` — put two random pins head to head
+  • `battle finish` — finish the current battle now
+  • `battle cancel` — cancel the current battle
   • `help` — show this message
 HELP
 
@@ -88,6 +90,15 @@ def main
 end
 
 def handle_battle_command(event)
+  action = battle_command_action(event.content)
+  if action == 'finish'
+    finish_active_battle(event)
+    return
+  elsif action == 'cancel'
+    cancel_active_battle(event)
+    return
+  end
+
   if $battle_store.active_battle
     event.send_message('A battle is already underway.')
     return
@@ -103,7 +114,9 @@ def handle_battle_command(event)
   started_at = Time.now
   battle = $battle_store.start_battle(
     pin_a_message_id: pin_a.id,
+    pin_a_channel_id: pin_a.channel.id,
     pin_b_message_id: pin_b.id,
+    pin_b_channel_id: pin_b.channel.id,
     channel_id: event.channel.id,
     started_at: started_at,
     ends_at: started_at + BATTLE_DURATION_SECONDS
@@ -113,10 +126,12 @@ def handle_battle_command(event)
     return
   end
 
+  letsgo = custom_emoji(event.server, 'letsgo')
+  letsgo_banner = ([letsgo] * 3).join(' ')
   battle_message = event.send_message(
-    "**PIN BATTLE**\n\n**A**\n\n**B**\n\nVote with:\n#{BATTLE_EMOJI_A} for A\n#{BATTLE_EMOJI_B} for B",
+    "#{letsgo_banner} **PIN BATTLE** #{letsgo_banner}\n\n\u200B",
     false,
-    [pin_embed(pin_a, 'A'), pin_embed(pin_b, 'B')]
+    [pin_embed(pin_a, BATTLE_EMOJI_A), pin_embed(pin_b, BATTLE_EMOJI_B)]
   )
   $battle_store.attach_message(battle['id'], battle_message.id)
   schedule_battle_timeout(battle['id'], battle['ends_at'])
@@ -125,6 +140,35 @@ def handle_battle_command(event)
 rescue StandardError
   $battle_store.cancel_unposted_battle(battle['id']) if defined?(battle) && battle
   raise
+end
+
+def custom_emoji(server, name)
+  emoji = server.emoji.values.find { |candidate| candidate.name == name }
+  emoji ? emoji.to_s : ":#{name}:"
+end
+
+def finish_active_battle(event)
+  battle = $battle_store.active_battle
+  unless battle
+    event.send_message('There is no battle underway.')
+    return
+  end
+
+  resolve_battle(battle['id'])
+end
+
+def cancel_active_battle(event)
+  battle = $battle_store.active_battle
+  unless battle
+    event.send_message('There is no battle underway.')
+    return
+  end
+
+  cancelled = $battle_store.cancel_battle(battle_id: battle['id'])
+  return unless cancelled
+
+  cancel_battle_timer
+  event.send_message('The battle has been cancelled.')
 end
 
 def handle_battle_reaction(event, removed:)
@@ -202,13 +246,30 @@ def resolve_battle(battle_id, timed_out: false)
   else
     winner = battle['winner_pin_id'] == battle['pin_a_id'] ? 'A' : 'B'
     loser = winner == 'A' ? 'B' : 'A'
+    winner_embed = winning_pin_embed(battle['winner_pin_id'])
     $bot.send_message(
       battle['discord_channel_id'],
-      "**PIN #{winner} WINS**\n\n#{winner} defeats #{loser}, #{[a_votes, b_votes].max}–#{[a_votes, b_votes].min}."
+      "✨ **･ﾟ✧ PIN #{winner} WINS ✧ﾟ･** ✨\n\n🏆 #{winner} defeats #{loser}, #{[a_votes, b_votes].max}–#{[a_votes, b_votes].min}. 🏆\n\n**WINNERRRRRRRRRRR**",
+      false,
+      winner_embed ? [winner_embed] : nil
     )
   end
 ensure
   cancel_battle_timer
+end
+
+def winning_pin_embed(pin_id)
+  pin = $battle_store.pin(pin_id)
+  return nil unless pin && pin['discord_channel_id']
+
+  channel = $bot.channel(pin['discord_channel_id'])
+  return nil unless channel
+
+  message = channel.load_message(pin['discord_message_id'])
+  pin_embed(message)
+rescue StandardError => e
+  warn("Could not showcase winning pin: #{e.class}: #{e.message}")
+  nil
 end
 
 def cancel_battle_timer
@@ -286,7 +347,11 @@ def is_today_command?(content)
 end
 
 def is_battle_command?(content)
-  content.split('>').last.strip.downcase == 'battle'
+  %w[b battle battle\ finish battle\ cancel].include?(content.split('>').last.strip.downcase)
+end
+
+def battle_command_action(content)
+  content.split('>').last.strip.downcase.delete_prefix('battle').strip
 end
 
 def is_imported_channel?(channel)
