@@ -3,6 +3,8 @@
 require 'bundler/setup'
 require 'date'
 require 'discordrb'
+require 'time'
+require_relative 'battle_store'
 
 # The final channel number that was imported from Slack
 FINAL_SLACK_CHANNEL_NUMBER = 68
@@ -21,18 +23,28 @@ MAX_IMAGE_CHANNEL_ATTEMPTS = 10
 ARCHIVE_SEARCH_CONCURRENCY = 5
 ARCHIVE_CACHE_TTL_SECONDS = 300
 
+BATTLE_DURATION_SECONDS = 60 * 60
+BATTLE_VOTER_COUNT = 3
+BATTLE_EMOJI_A = '🅰️'
+BATTLE_EMOJI_B = '🅱️'
+DATABASE_PATH = ENV.fetch('PINBOT_DATABASE_PATH', File.expand_path('../data/pinbot.sqlite3', __dir__))
+
 HELP_MESSAGE = <<~'HELP'
   Mention me with one of the following commands:
   • `r`, `random` — send a random pin
   • `ri`, `randomimage` — send a random image pin
   • `pc`, `pincount`, `count` — count pins in this channel
   • `t`, `today` — send a pin from this date in history
+  • `battle` — put two random pins head to head
   • `help` — show this message
 HELP
 
 $bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 $archive_cache = {}
 $archive_cache_mutex = Mutex.new
+$battle_store = BattleStore.new(DATABASE_PATH)
+$battle_timer_mutex = Mutex.new
+$battle_timer = nil
 
 def main
 
@@ -42,11 +54,25 @@ def main
     forward_message(event, event.message)
   end
 
+  $bot.ready do |_event|
+    restore_active_battle
+  end
+
+  $bot.reaction_add do |event|
+    handle_battle_reaction(event, removed: false)
+  end
+
+  $bot.reaction_remove do |event|
+    handle_battle_reaction(event, removed: true)
+  end
+
   $bot.mention do |event|
     next if event.server.nil?
 
     if is_help_command?(event.content)
       handle_help_command(event)
+    elsif is_battle_command?(event.content)
+      handle_battle_command(event)
     elsif is_today_command?(event.content)
       handle_today_command(event)
     elsif is_random_image_command?(event.content)
@@ -59,6 +85,139 @@ def main
   end
 
   $bot.run
+end
+
+def handle_battle_command(event)
+  if $battle_store.active_battle
+    event.send_message('A battle is already underway.')
+    return
+  end
+
+  pins = random_battle_pins(event)
+  if pins.nil?
+    event.send_message('I could not find two pins to battle.')
+    return
+  end
+
+  pin_a, pin_b = pins
+  started_at = Time.now
+  battle = $battle_store.start_battle(
+    pin_a_message_id: pin_a.id,
+    pin_b_message_id: pin_b.id,
+    channel_id: event.channel.id,
+    started_at: started_at,
+    ends_at: started_at + BATTLE_DURATION_SECONDS
+  )
+  unless battle
+    event.send_message('A battle is already underway.')
+    return
+  end
+
+  battle_message = event.send_message(
+    "**PIN BATTLE**\n\n**A**\n\n**B**\n\nVote with:\n#{BATTLE_EMOJI_A} for A\n#{BATTLE_EMOJI_B} for B",
+    false,
+    [pin_embed(pin_a, 'A'), pin_embed(pin_b, 'B')]
+  )
+  $battle_store.attach_message(battle['id'], battle_message.id)
+  schedule_battle_timeout(battle['id'], battle['ends_at'])
+  battle_message.react(BATTLE_EMOJI_A)
+  battle_message.react(BATTLE_EMOJI_B)
+rescue StandardError
+  $battle_store.cancel_unposted_battle(battle['id']) if defined?(battle) && battle
+  raise
+end
+
+def handle_battle_reaction(event, removed:)
+  emoji = event.emoji.name
+  return unless [BATTLE_EMOJI_A, BATTLE_EMOJI_B].include?(emoji)
+  return if event.user.bot_account?
+
+  battle = $battle_store.active_battle_for_message(event.message_id)
+  return unless battle
+
+  pin_id = emoji == BATTLE_EMOJI_A ? battle['pin_a_id'] : battle['pin_b_id']
+  counts = if removed
+             $battle_store.remove_vote(
+               battle_id: battle['id'], discord_user_id: event.user.id, pin_id: pin_id
+             )
+           else
+             $battle_store.record_vote(
+               battle_id: battle['id'], discord_user_id: event.user.id, pin_id: pin_id
+             )
+           end
+  return unless counts && counts.values.sum >= BATTLE_VOTER_COUNT
+
+  resolve_battle(battle['id'])
+end
+
+def restore_active_battle
+  battle = $battle_store.active_battle
+  return unless battle
+
+  if battle['discord_battle_message_id'].nil?
+    $battle_store.cancel_unposted_battle(battle['id'])
+    return
+  end
+
+  if Time.parse(battle['ends_at']) <= Time.now
+    resolve_battle(battle['id'], timed_out: true)
+  else
+    schedule_battle_timeout(battle['id'], battle['ends_at'])
+  end
+end
+
+def schedule_battle_timeout(battle_id, ends_at)
+  deadline = Time.parse(ends_at)
+  $battle_timer_mutex.synchronize do
+    $battle_timer&.kill
+    $battle_timer = Thread.new do
+      sleep_seconds = deadline - Time.now
+      sleep(sleep_seconds) if sleep_seconds.positive?
+      resolve_battle(battle_id, timed_out: true)
+    rescue StandardError => e
+      warn("Battle timer failed: #{e.class}: #{e.message}")
+    end
+  end
+end
+
+def resolve_battle(battle_id, timed_out: false)
+  active = $battle_store.active_battle
+  return unless active && active['id'] == battle_id
+
+  display_choice_pin_id = [active['pin_a_id'], active['pin_b_id']].sample
+  battle = $battle_store.resolve(
+    battle_id: battle_id,
+    display_choice_pin_id: display_choice_pin_id
+  )
+  return unless battle
+
+  a_votes = battle['vote_counts'].fetch(battle['pin_a_id'], 0)
+  b_votes = battle['vote_counts'].fetch(battle['pin_b_id'], 0)
+  if battle['is_draw'] == 1
+    choice = battle['display_choice_pin_id'] == battle['pin_a_id'] ? 'A' : 'B'
+    $bot.send_message(
+      battle['discord_channel_id'],
+      "Fine then, I guess I'll have to choose.\n\nPinbot chooses #{choice}.\n\nThe battle is recorded as a draw (#{a_votes}–#{b_votes})."
+    )
+  else
+    winner = battle['winner_pin_id'] == battle['pin_a_id'] ? 'A' : 'B'
+    loser = winner == 'A' ? 'B' : 'A'
+    $bot.send_message(
+      battle['discord_channel_id'],
+      "**PIN #{winner} WINS**\n\n#{winner} defeats #{loser}, #{[a_votes, b_votes].max}–#{[a_votes, b_votes].min}."
+    )
+  end
+ensure
+  cancel_battle_timer
+end
+
+def cancel_battle_timer
+  $battle_timer_mutex.synchronize do
+    if $battle_timer && $battle_timer != Thread.current
+      $battle_timer.kill
+    end
+    $battle_timer = nil
+  end
 end
 
 def handle_random_command(event)
@@ -126,6 +285,10 @@ def is_today_command?(content)
   message == 't' || message == 'today'
 end
 
+def is_battle_command?(content)
+  content.split('>').last.strip.downcase == 'battle'
+end
+
 def is_imported_channel?(channel)
   channel_number = Integer(channel.name.match(/[0-9]{3}/).to_s.gsub('0', ''))
   channel_number < FINAL_SLACK_CHANNEL_NUMBER
@@ -138,12 +301,21 @@ def is_imported_pin?(message)
 end
 
 def forward_message(event, message, title = nil)
+  content = ''
+  tts = nil
+  embed = [pin_embed(message, title)]
+  attachments = nil
+  allowed_mentions = nil
+  message_reference = nil
+
+  event.send_message(content, tts, embed, attachments, allowed_mentions, message_reference)
+end
+
+def pin_embed(message, title = nil)
   author = message.author
   timestamp = pin_timestamp(message)
   channel_link = "[##{message.channel.name} • #{timestamp.strftime('%-m/%-d/%Y %l:%M %p')}](#{message.link})"
   message_content = message.content.gsub(/`[0-9]{2}:[0-9]{2}` /, '')
-  content = ''
-  tts = nil
   attachment = message.attachments.empty? ? nil : message.attachments.first
   image = attachment.nil? ? nil : {
     'proxy_url' => attachment.proxy_url,
@@ -151,26 +323,22 @@ def forward_message(event, message, title = nil)
     'width' => attachment.width,
     'height' => attachment.height,
   }
-  embed = [{
-             'url' => message.link,
-             'timestamp' => nil,
-             'description' => message_content,
-             'author': {
-               'name' => author.display_name,
-               'icon_url' => author.avatar_url,
-             },
-             'image' => image,
-             'fields': [{
-                          'name' => '',
-                          'value' => channel_link,
-                        }]
-           }]
-  embed.first['title'] = title unless title.nil?
-  attachments = nil
-  allowed_mentions = nil
-  message_reference = nil
-
-  event.send_message(content, tts, embed, attachments, allowed_mentions, message_reference)
+  embed = {
+    'url' => message.link,
+    'timestamp' => nil,
+    'description' => message_content,
+    'author': {
+      'name' => author.display_name,
+      'icon_url' => author.avatar_url,
+    },
+    'image' => image,
+    'fields': [{
+      'name' => '',
+      'value' => channel_link,
+    }]
+  }
+  embed['title'] = title unless title.nil?
+  embed
 end
 
 def random_channel(event)
@@ -194,6 +362,20 @@ def random_pin(event)
   end
 
   pin
+end
+
+def random_battle_pins(event)
+  pins = []
+  50.times do
+    pin = random_pin(event)
+    next if pin.nil? || pin.content.include?(TIMESTAMP_MESSAGE_PREFIX)
+    next if pins.any? { |candidate| candidate.id == pin.id }
+
+    pins << pin
+    return pins if pins.length == 2
+  end
+
+  nil
 end
 
 def random_image_pin(event)
