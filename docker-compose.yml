@@ -4,3 +4,8 @@ services:
     restart: always
     env_file:
       - .env
+    volumes:
+      - pinbot_data:/app/data
+
+volumes:
+  pinbot_data:
