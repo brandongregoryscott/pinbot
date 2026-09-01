@@ -27,7 +27,7 @@ class BattleStoreTest < Minitest::Test
     assert_nil @store.start_battle(
       pin_a_message_id: '333', pin_a_channel_id: '30',
       pin_b_message_id: '444', pin_b_channel_id: '40', channel_id: '999',
-      started_at: @now, ends_at: @now + 3600
+      started_at: @now, ends_at: @now + 300
     )
     assert_equal battle['id'], @store.active_battle['id']
   end
@@ -37,7 +37,7 @@ class BattleStoreTest < Minitest::Test
       @store.start_battle(
         pin_a_message_id: '111', pin_a_channel_id: '10',
         pin_b_message_id: '111', pin_b_channel_id: '10', channel_id: '999',
-        started_at: @now, ends_at: @now + 3600
+        started_at: @now, ends_at: @now + 300
       )
     end
   end
@@ -94,7 +94,7 @@ class BattleStoreTest < Minitest::Test
     vote(battle, 'two', battle['pin_b_id'])
 
     result = @store.resolve(
-      battle_id: battle['id'], ended_at: @now + 3600,
+      battle_id: battle['id'], ended_at: @now + 300,
       display_choice_pin_id: battle['pin_a_id']
     )
 
@@ -109,7 +109,7 @@ class BattleStoreTest < Minitest::Test
     battle = start_battle
 
     result = @store.resolve(
-      battle_id: battle['id'], ended_at: @now + 3600,
+      battle_id: battle['id'], ended_at: @now + 300,
       display_choice_pin_id: battle['pin_b_id']
     )
 
@@ -127,7 +127,7 @@ class BattleStoreTest < Minitest::Test
     next_battle = @store.start_battle(
       pin_a_message_id: '333', pin_a_channel_id: '30',
       pin_b_message_id: '444', pin_b_channel_id: '40', channel_id: '999',
-      started_at: @now + 2, ends_at: @now + 3602
+      started_at: @now + 2, ends_at: @now + 302
     )
     assert next_battle
     @store.cancel_unposted_battle(next_battle['id'])
@@ -180,7 +180,7 @@ class BattleStoreTest < Minitest::Test
     @store.start_battle(
       pin_a_message_id: '111', pin_a_channel_id: '10',
       pin_b_message_id: '222', pin_b_channel_id: '20', channel_id: '999',
-      started_at: @now, ends_at: @now + 3600
+      started_at: @now, ends_at: @now + 300
     )
   end
 

@@ -17,7 +17,7 @@ Mention the bot followed by one of the following commands:
 
 ## Pin Battles
 
-Start a battle with `@Pinbot battle`. Pinbot presents two distinct random pins and adds 🅰️ and 🅱️ reactions. Each human participant has one vote and can change it by reacting to the other option. A battle ends as soon as three unique people have voted, or after one hour. The result showcases the winning pin. Timed-out ties are recorded as draws; Pinbot's joke tiebreak choice does not change either pin's totals.
+Start a battle with `@Pinbot battle`. Pinbot presents two distinct random pins and adds 🅰️ and 🅱️ reactions. Each human participant has one vote and can change it by reacting to the other option. A battle ends as soon as three unique people have voted, or after five minutes. The result showcases the winning pin. Timed-out ties are recorded as draws; Pinbot's joke tiebreak choice does not change either pin's totals.
 
 Pin wins, losses, battle history, and votes are stored in SQLite. Docker Compose mounts the named `pinbot_data` volume at `/app/data`, where the bot stores `pinbot.sqlite3`, so results survive container recreation. Set `PINBOT_DATABASE_PATH` to use a different path outside Docker.
 
