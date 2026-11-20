@@ -34,6 +34,4 @@ bundle install
 BOT_TOKEN=FOO.123_bar ruby src/pinbot.rb
 ```
 
-Mention handling writes `[pinbot-mentions]` logs with the bot ID, mentioned users and roles, command dispatch, and completion or failure. A `not_addressed_to_bot` entry means neither the bot's user ID nor literal `@Pinbot` text was found; a role named Pinbot is a separate Discord mention.
-
-For additional diagnostics, set `PINBOT_DEBUG_MENTIONS=true` and restart the bot. This logs every received message, including its content (up to 500 characters), so it can reveal empty content or the raw Discord mention format. Turn it off after reproducing the issue.
+Set `PINBOT_DEBUG_MENTIONS=true` and restart to log all received messages and up to 500 characters of content. Disable after debugging.

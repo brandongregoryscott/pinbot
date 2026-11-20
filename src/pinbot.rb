@@ -44,6 +44,7 @@ HELP
 
 # A typed alias still works when Discord cannot resolve the bot's current name.
 PINBOT_MENTION = /(?<![\w@])@pinbot(?![\w-])/i
+DEBUG_MENTIONS = ENV['PINBOT_DEBUG_MENTIONS'] == 'true'
 
 $bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 $archive_cache = {}
@@ -61,7 +62,7 @@ def main
   end
 
   $bot.ready do |_event|
-    Discordrb::LOGGER.info("[pinbot-mentions] ready bot_id=#{$bot.profile.id} typed_alias=@Pinbot diagnostics=#{ENV['PINBOT_DEBUG_MENTIONS'] == 'true'}")
+    Discordrb::LOGGER.info("[pinbot-mentions] ready bot_id=#{$bot.profile.id} typed_alias=@Pinbot diagnostics=#{DEBUG_MENTIONS}")
     restore_active_battle
   end
 
@@ -83,8 +84,7 @@ end
 def handle_command_message(event)
   native_mention = event.message.mentions.any? { |user| user.id == $bot.profile.id }
   typed_mention = PINBOT_MENTION.match?(event.content)
-  diagnostics = ENV['PINBOT_DEBUG_MENTIONS'] == 'true'
-  log_message = diagnostics || native_mention || typed_mention ||
+  log_message = DEBUG_MENTIONS || native_mention || typed_mention ||
                 event.message.mentions.any? || event.message.role_mentions.any?
   context = { message_id: event.message.id, channel_id: event.channel.id, bot_id: $bot.profile.id }
 
@@ -95,7 +95,7 @@ def handle_command_message(event)
       mentioned_roles: event.message.role_mentions.compact.map { |role| { id: role.id, name: role.name } },
       content_length: event.content.length
     )
-    details[:content] = event.content[0, 500] if diagnostics
+    details[:content] = event.content[0, 500] if DEBUG_MENTIONS
     Discordrb::LOGGER.info("[pinbot-mentions] received #{details.to_json}")
   end
 
