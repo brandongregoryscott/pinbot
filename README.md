@@ -33,3 +33,5 @@ Pin wins, losses, battle history, and votes are stored in SQLite. Docker Compose
 bundle install
 BOT_TOKEN=FOO.123_bar ruby src/pinbot.rb
 ```
+
+Set `PINBOT_DEBUG_MENTIONS=true` and restart to log all received messages and up to 500 characters of content. Disable after debugging.

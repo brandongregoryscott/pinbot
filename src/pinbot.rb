@@ -3,6 +3,7 @@
 require 'bundler/setup'
 require 'date'
 require 'discordrb'
+require 'json'
 require 'time'
 require_relative 'battle_store'
 
@@ -43,6 +44,7 @@ HELP
 
 # A typed alias still works when Discord cannot resolve the bot's current name.
 PINBOT_MENTION = /(?<![\w@])@pinbot(?![\w-])/i
+DEBUG_MENTIONS = ENV['PINBOT_DEBUG_MENTIONS'] == 'true'
 
 $bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 $archive_cache = {}
@@ -60,6 +62,7 @@ def main
   end
 
   $bot.ready do |_event|
+    Discordrb::LOGGER.info("[pinbot-mentions] ready bot_id=#{$bot.profile.id} typed_alias=@Pinbot diagnostics=#{DEBUG_MENTIONS}")
     restore_active_battle
   end
 
@@ -72,25 +75,64 @@ def main
   end
 
   $bot.message do |event|
-    next if event.server.nil?
-    next unless event.message.mentions.any? { |user| user.id == $bot.profile.id } || PINBOT_MENTION.match?(event.content)
-
-    if is_help_command?(event.content)
-      handle_help_command(event)
-    elsif is_battle_command?(event.content)
-      handle_battle_command(event)
-    elsif is_today_command?(event.content)
-      handle_today_command(event)
-    elsif is_random_image_command?(event.content)
-      handle_random_image_command(event)
-    elsif is_random_command?(event.content)
-      handle_random_command(event)
-    elsif is_pin_count_command?(event.content)
-      handle_pin_count_command(event)
-    end
+    handle_command_message(event)
   end
 
   $bot.run
+end
+
+def handle_command_message(event)
+  native_mention = event.message.mentions.any? { |user| user.id == $bot.profile.id }
+  typed_mention = PINBOT_MENTION.match?(event.content)
+  log_message = DEBUG_MENTIONS || native_mention || typed_mention ||
+                event.message.mentions.any? || event.message.role_mentions.any?
+  context = { message_id: event.message.id, channel_id: event.channel.id, bot_id: $bot.profile.id }
+
+  if log_message
+    details = context.merge(
+      native_mention: native_mention, typed_mention: typed_mention,
+      mentioned_user_ids: event.message.mentions.map(&:id),
+      mentioned_roles: event.message.role_mentions.compact.map { |role| { id: role.id, name: role.name } },
+      content_length: event.content.length
+    )
+    details[:content] = event.content[0, 500] if DEBUG_MENTIONS
+    Discordrb::LOGGER.info("[pinbot-mentions] received #{details.to_json}")
+  end
+
+  if event.server.nil? || !(native_mention || typed_mention)
+    if log_message
+      reason = event.server.nil? ? 'private_message' : 'not_addressed_to_bot'
+      Discordrb::LOGGER.info("[pinbot-mentions] skipped #{context.merge(reason: reason).to_json}")
+    end
+    return
+  end
+
+  handler = if is_help_command?(event.content)
+              :handle_help_command
+            elsif is_battle_command?(event.content)
+              :handle_battle_command
+            elsif is_today_command?(event.content)
+              :handle_today_command
+            elsif is_random_image_command?(event.content)
+              :handle_random_image_command
+            elsif is_random_command?(event.content)
+              :handle_random_command
+            elsif is_pin_count_command?(event.content)
+              :handle_pin_count_command
+            end
+
+  unless handler
+    Discordrb::LOGGER.info("[pinbot-mentions] skipped #{context.merge(reason: 'unknown_command').to_json}")
+    return
+  end
+
+  context[:handler] = handler
+  Discordrb::LOGGER.info("[pinbot-mentions] dispatch #{context.to_json}")
+  send(handler, event)
+  Discordrb::LOGGER.info("[pinbot-mentions] completed #{context.to_json}")
+rescue StandardError => error
+  Discordrb::LOGGER.error("[pinbot-mentions] failed #{context.to_json} error=#{error.class}")
+  raise
 end
 
 def handle_battle_command(event)
