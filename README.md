@@ -4,7 +4,7 @@ Pinbot is a Discord bot that re-shares messages when they are pinned, which was 
 
 ## Commands
 
-Mention the bot followed by one of the following commands:
+Mention the bot or type `@Pinbot` followed by one of the following commands. The typed `@Pinbot` alias is case-insensitive and works even when the bot has a different display name:
 
 - `r`, `random` — sends a random pin
 - `ri`, `randomimage` — sends a random image pin
