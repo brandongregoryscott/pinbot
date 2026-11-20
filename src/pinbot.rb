@@ -41,6 +41,9 @@ HELP_MESSAGE = <<~'HELP'
   • `help` — show this message
 HELP
 
+# A typed alias still works when Discord cannot resolve the bot's current name.
+PINBOT_MENTION = /(?<![\w@])@pinbot(?![\w-])/i
+
 $bot = Discordrb::Bot.new(token: ENV['BOT_TOKEN'])
 $archive_cache = {}
 $archive_cache_mutex = Mutex.new
@@ -68,8 +71,9 @@ def main
     handle_battle_reaction(event, removed: true)
   end
 
-  $bot.mention do |event|
+  $bot.message do |event|
     next if event.server.nil?
+    next unless event.message.mentions.any? { |user| user.id == $bot.profile.id } || PINBOT_MENTION.match?(event.content)
 
     if is_help_command?(event.content)
       handle_help_command(event)
@@ -321,37 +325,41 @@ def handle_pin_count_command(event)
   event.send_message("#{pin_count} :pushpin:")
 end
 
+def command_content(content)
+  content.split(/>|#{PINBOT_MENTION}/).last.to_s.strip
+end
+
 def is_pin_count_command?(content)
-  message = content.split('>').last.strip.downcase
+  message = command_content(content).downcase
   message.start_with?('pc') || message.start_with?('pincount') || message.start_with?('count')
 end
 
 def is_random_image_command?(content)
-  message = content.split('>').last.strip.downcase
+  message = command_content(content).downcase
   message.start_with?('ri') || message.start_with?('randomimage')
 end
 
 def is_random_command?(content)
-  message = content.split('>').last.strip
+  message = command_content(content)
   message.start_with?('r') || message.start_with?('random') || message.end_with?('r') || message.end_with?('random')
 end
 
 def is_help_command?(content)
-  message = content.split('>').last.strip.downcase
+  message = command_content(content).downcase
   message.start_with?('help')
 end
 
 def is_today_command?(content)
-  message = content.split('>').last.strip.downcase
+  message = command_content(content).downcase
   message == 't' || message == 'today'
 end
 
 def is_battle_command?(content)
-  %w[b battle battle\ finish battle\ cancel].include?(content.split('>').last.strip.downcase)
+  %w[b battle battle\ finish battle\ cancel].include?(command_content(content).downcase)
 end
 
 def battle_command_action(content)
-  content.split('>').last.strip.downcase.delete_prefix('battle').strip
+  command_content(content).downcase.delete_prefix('battle').strip
 end
 
 def is_imported_channel?(channel)
