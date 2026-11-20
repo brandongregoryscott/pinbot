@@ -84,13 +84,14 @@ end
 def handle_command_message(event)
   native_mention = event.message.mentions.any? { |user| user.id == $bot.profile.id }
   typed_mention = PINBOT_MENTION.match?(event.content)
+  role_mention = event.message.role_mentions.compact.any? { |role| role.name.casecmp?('Pinbot') }
   log_message = DEBUG_MENTIONS || native_mention || typed_mention ||
                 event.message.mentions.any? || event.message.role_mentions.any?
   context = { message_id: event.message.id, channel_id: event.channel.id, bot_id: $bot.profile.id }
 
   if log_message
     details = context.merge(
-      native_mention: native_mention, typed_mention: typed_mention,
+      native_mention: native_mention, typed_mention: typed_mention, role_mention: role_mention,
       mentioned_user_ids: event.message.mentions.map(&:id),
       mentioned_roles: event.message.role_mentions.compact.map { |role| { id: role.id, name: role.name } },
       content_length: event.content.length
@@ -99,7 +100,7 @@ def handle_command_message(event)
     Discordrb::LOGGER.info("[pinbot-mentions] received #{details.to_json}")
   end
 
-  if event.server.nil? || !(native_mention || typed_mention)
+  if event.server.nil? || !(native_mention || typed_mention || role_mention)
     if log_message
       reason = event.server.nil? ? 'private_message' : 'not_addressed_to_bot'
       Discordrb::LOGGER.info("[pinbot-mentions] skipped #{context.merge(reason: reason).to_json}")
